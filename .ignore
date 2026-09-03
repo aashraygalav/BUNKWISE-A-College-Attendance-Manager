@@ -1,0 +1,12 @@
+# Ignore build and developer files from static asset upload
+node_modules/
+.git/
+.github/
+server.js
+package.json
+package-lock.json
+README.md
+.gitignore
+.assetsignore
+.wranglerignore
+.ignore
