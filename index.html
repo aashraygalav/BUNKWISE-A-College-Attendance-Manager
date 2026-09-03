@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BunkWise — 75% Attendance & Learning Hours Tracker</title>
+  <meta name="description" content="Minimal, modern attendance tracker for college students based on Total Learning Hours. Supports 115m Labs + 55m Theory classes with 75% criteria.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20260903_4">
+</head>
+<body>
+  <!-- UPES Bidholi Campus Cinematic Cyber Background Layer -->
+  <div class="campus-bg-layer" aria-hidden="true">
+    <div class="campus-bg-img"></div>
+    <div class="cyber-grid"></div>
+    <canvas id="cyberCanvas" class="cyber-canvas"></canvas>
+    <div class="laser-beam"></div>
+    <div class="mouse-glow" id="mouseGlow"></div>
+    <div class="hud-telemetry left-telemetry">
+      <span class="hud-tag">UPES // BIDHOLI SECTOR</span>
+      <span class="hud-coord">30.4158° N, 77.9658° E</span>
+      <span class="hud-data">ELEVATION 710M ASL • DEHRADUN</span>
+    </div>
+    <div class="hud-telemetry right-telemetry">
+      <span class="hud-tag">LN4 TELEMETRY // ACTIVE</span>
+      <span class="hud-coord">HYBRID: 55M TH + 115M LAB</span>
+      <span class="hud-data">TARGET CRITERIA: 75% MIN</span>
+    </div>
+    <div class="campus-bg-vignette"></div>
+  </div>
+
+  <!-- Ambient Floating Mesh Glows -->
+  <div class="ambient-glow glow-1" aria-hidden="true"></div>
+  <div class="ambient-glow glow-2" aria-hidden="true"></div>
+  <div class="ambient-glow glow-3" aria-hidden="true"></div>
+
+  <!-- SVG Gradient Definitions for SVG Radial Dials -->
+  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+    <defs>
+      <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#6366f1" />
+        <stop offset="100%" stop-color="#a855f7" />
+      </linearGradient>
+      <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#10b981" />
+        <stop offset="100%" stop-color="#34d399" />
+      </linearGradient>
+      <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f59e0b" />
+        <stop offset="100%" stop-color="#fbbf24" />
+      </linearGradient>
+      <linearGradient id="roseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f43f5e" />
+        <stop offset="100%" stop-color="#fb7185" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div class="app-container">
+    <!-- Navbar / Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">BunkWise <span class="badge-target" id="targetBadge">75% Target</span></div>
+          <span class="brand-subtitle">UPES Bidholi • Learning Hours & Bunk Margin Planner (55m Theory + 115m Labs)</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-icon" id="quickLogBtn" title="Quick Daily Log">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <path d="m9 16 2 2 4-4"></path>
+          </svg>
+          <span class="btn-text">Today's Log</span>
+        </button>
+
+        <button class="btn btn-secondary btn-icon" id="soundToggleBtn" title="Toggle Sound Feedback" aria-label="Toggle sound">
+          <svg class="sound-on-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg class="sound-off-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <button class="btn btn-secondary btn-icon" id="settingsBtn" title="Settings & Backup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+
+        <button class="btn btn-secondary btn-icon" id="themeToggleBtn" title="Toggle Theme" aria-label="Toggle theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <button class="btn btn-primary" id="openAddSubjectBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Subject</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hour Weights Callout Notice -->
+    <div class="hours-info-banner">
+      <div class="hours-info-item">
+        <span class="hours-pill pill-theory">Theory</span>
+        <span><strong>55 mins</strong> / class</span>
+      </div>
+      <div class="hours-info-divider">+</div>
+      <div class="hours-info-item">
+        <span class="hours-pill pill-lab">Lab Session</span>
+        <span><strong>115 mins</strong> / session (2.09× Theory weight)</span>
+      </div>
+      <div class="hours-info-divider">•</div>
+      <div class="hours-info-item text-dimmed">
+        <span>Standard Format: <strong>1 Lab + 3 Theory</strong> classes per week</span>
+      </div>
+    </div>
+
+    <!-- Overview Banner / Stats Strip -->
+    <section class="overview-section" id="overviewSection">
+      <div class="overview-card main-rate-card">
+        <div class="rate-info">
+          <span class="rate-label">Overall Learning Hours Attendance</span>
+          <div class="rate-value-group">
+            <span class="rate-number" id="overallRate">0.0%</span>
+            <span class="rate-status-pill" id="overallStatusPill">No Data</span>
+          </div>
+          <p class="rate-subtext" id="overallRateSubtext">Calculated from total attended learning minutes vs conducted minutes.</p>
+        </div>
+        <div class="rate-visual">
+          <svg class="radial-chart" width="104" height="104" viewBox="0 0 100 100">
+            <circle class="radial-bg" cx="50" cy="50" r="42" />
+            <circle class="radial-fill" id="overallRadialFill" cx="50" cy="50" r="42" />
+            <text x="50" y="55" class="radial-center-text" id="overallRadialText">0%</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="overview-stats-grid">
+        <div class="stat-mini-card">
+          <div class="stat-mini-icon stat-attended">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="stat-mini-content">
+            <span class="stat-mini-num" id="totalAttendedHours">0.0 hrs</span>
+            <span class="stat-mini-title">Attended Hours (<span id="totalAttendedClasses">0</span> classes)</span>
+          </div>
+        </div>
+
+        <div class="stat-mini-card">
+          <div class="stat-mini-icon stat-missed">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </div>
+          <div class="stat-mini-content">
+            <span class="stat-mini-num" id="totalMissedHours">0.0 hrs</span>
+            <span class="stat-mini-title">Missed Hours (<span id="totalMissedClasses">0</span> bunks)</span>
+          </div>
+        </div>
+
+        <div class="stat-mini-card">
+          <div class="stat-mini-icon stat-conducted">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <div class="stat-mini-content">
+            <span class="stat-mini-num" id="totalConductedHours">0.0 hrs</span>
+            <span class="stat-mini-title">Conducted Hours (<span id="totalConductedClasses">0</span> classes)</span>
+          </div>
+        </div>
+
+        <div class="stat-mini-card">
+          <div class="stat-mini-icon stat-semester">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </div>
+          <div class="stat-mini-content">
+            <span class="stat-mini-num" id="totalSemesterHours">0.0 hrs</span>
+            <span class="stat-mini-title">Total Sem Planned (<span id="totalSemesterClasses">0</span> classes)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls Bar (Filter, Sort, Search, Demo Data) -->
+    <div class="controls-bar">
+      <div class="filter-tabs" role="tablist">
+        <button class="filter-tab active" data-filter="all">All Subjects (<span id="countAll">0</span>)</button>
+        <button class="filter-tab" data-filter="safe">Safe to Bunk (<span id="countSafe">0</span>)</button>
+        <button class="filter-tab" data-filter="danger">Need Attendance (<span id="countDanger">0</span>)</button>
+        <button class="filter-tab" data-filter="labs">Has Labs (<span id="countLabs">0</span>)</button>
+      </div>
+
+      <div class="controls-right">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search subject..." autocomplete="off">
+        </div>
+
+        <select id="sortSelect" class="select-sort" aria-label="Sort subjects">
+          <option value="criticalFirst">Sort: Needs Attention First</option>
+          <option value="attendanceLow">Lowest % First</option>
+          <option value="attendanceHigh">Highest % First</option>
+          <option value="mostBunks">Most Bunks Available</option>
+          <option value="name">Subject Name (A-Z)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Subjects Cards Grid -->
+    <main class="subjects-container" id="subjectsContainer">
+      <!-- Injected via JavaScript -->
+    </main>
+
+    <!-- Empty State (Shown when 0 subjects) -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <div class="empty-illustration">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+      </div>
+      <h3>No Subjects Tracked Yet</h3>
+      <p>Add your college courses with Theory and Lab breakdowns to calculate your exact 75% learning hours attendance.</p>
+      <div class="empty-actions">
+        <button class="btn btn-primary" id="emptyAddBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add First Subject
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add / Edit Subject -->
+  <dialog class="modal-dialog" id="subjectModal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add New Subject</h3>
+        <button class="btn-close" id="closeSubjectModalBtn" aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="subjectForm" class="modal-form">
+        <input type="hidden" id="editSubjectId">
+
+        <div class="form-row">
+          <div class="form-group" style="flex: 2;">
+            <label for="subjectName">Subject Name <span class="req">*</span></label>
+            <input type="text" id="subjectName" required placeholder="e.g., Computer Networks" autocomplete="off">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label for="subjectCode">Course Code</label>
+            <input type="text" id="subjectCode" placeholder="e.g., CS304" autocomplete="off">
+          </div>
+          <div class="form-group" style="width: 100px;">
+            <label for="subjectTarget">Target %</label>
+            <input type="number" id="subjectTarget" min="50" max="100" step="1" value="75" required>
+          </div>
+        </div>
+
+        <!-- Total Learning Hours Input Option -->
+        <div class="learning-hours-input-box">
+          <div class="hours-input-group">
+            <label for="subjectTotalHours">
+              <span><strong>Total Semester Learning Hours</strong> <span class="req">*</span></span>
+              <span class="input-hint">Directly enter total course hours (e.g. 60.0 hrs) or auto-calculate from classes below</span>
+            </label>
+            <div class="hours-input-control">
+              <input type="number" id="subjectTotalHours" min="1" max="500" step="0.5" value="65.3" required>
+              <span class="hours-unit-tag">Hours</span>
+              <span class="live-minutes-calc" id="liveMinutesCalc">(= 3,920 mins)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Has Lab Toggle Switch -->
+        <div class="lab-toggle-box">
+          <div class="lab-toggle-info">
+            <span class="lab-toggle-title">Subject has Lab Component</span>
+            <span class="lab-toggle-desc">Labs are 115 minutes (2.09× Theory weight) while Theory classes are 55 minutes.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="subjectHasLab" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+
+        <!-- Weekly Format Preset Helper (Visible when Lab is checked) -->
+        <div class="weekly-preset-box" id="weeklyPresetBox">
+          <div class="preset-header">
+            <span class="preset-title">📅 Quick Semester Schedule Helper (1 Lab + 3 Theory / week)</span>
+          </div>
+          <div class="preset-controls">
+            <label for="semesterWeeksInput">Weeks in Semester:</label>
+            <input type="number" id="semesterWeeksInput" min="1" max="25" value="14" style="width: 70px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="applyWeeklyPresetBtn">Apply (14 Labs + 42 Theory)</button>
+          </div>
+        </div>
+
+        <!-- Theory Classes Section -->
+        <div class="sub-form-section">
+          <div class="sub-form-title">
+            <span class="hours-pill pill-theory">Theory Classes</span>
+            <span>(55 mins per class)</span>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="subjectTheoryTotal">Total Planned in Sem <span class="req">*</span></label>
+              <input type="number" id="subjectTheoryTotal" min="1" max="200" value="42" required>
+            </div>
+            <div class="form-group">
+              <label for="subjectTheoryAttended">Attended So Far</label>
+              <input type="number" id="subjectTheoryAttended" min="0" value="0" required>
+            </div>
+            <div class="form-group">
+              <label for="subjectTheoryMissed">Missed / Bunked</label>
+              <input type="number" id="subjectTheoryMissed" min="0" value="0" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lab Sessions Section (Hidden if HasLab is unchecked) -->
+        <div class="sub-form-section" id="labFormSection">
+          <div class="sub-form-title">
+            <span class="hours-pill pill-lab">Lab Sessions</span>
+            <span>(115 mins per session)</span>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="subjectLabTotal">Total Planned in Sem <span class="req">*</span></label>
+              <input type="number" id="subjectLabTotal" min="0" max="100" value="14">
+            </div>
+            <div class="form-group">
+              <label for="subjectLabAttended">Attended So Far</label>
+              <input type="number" id="subjectLabAttended" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label for="subjectLabMissed">Missed / Bunked</label>
+              <input type="number" id="subjectLabMissed" min="0" value="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-help-tip">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>Attendance percentage is calculated as <code>Total Attended Minutes / Total Conducted Minutes × 100</code>.</span>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelSubjectModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveSubjectBtn">Save Subject</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL: Quick Daily Log -->
+  <dialog class="modal-dialog" id="quickLogModal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <div>
+          <h3>Quick Daily Attendance Log</h3>
+          <p class="modal-desc">Mark Theory (55m) and Lab (115m) sessions with one tap.</p>
+        </div>
+        <button class="btn-close" id="closeQuickLogModalBtn" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="quick-log-list" id="quickLogList">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="doneQuickLogBtn">Done</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- MODAL: Settings & Backup -->
+  <dialog class="modal-dialog" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Settings & Data Management</h3>
+        <button class="btn-close" id="closeSettingsModalBtn" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="settings-body">
+        <div class="setting-item">
+          <div class="setting-text">
+            <label for="globalTargetInput" class="setting-title">Default Attendance Criteria</label>
+            <span class="setting-desc">Minimum required percentage for college exams.</span>
+          </div>
+          <div class="setting-ctrl">
+            <div class="target-input-wrap">
+              <input type="number" id="globalTargetInput" min="50" max="100" step="1" value="75">
+              <span>%</span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="backup-section">
+          <h4 class="section-subheading">Data Backup & Restore</h4>
+          <p class="setting-desc">All your data is saved in your browser's LocalStorage. You can also export or import JSON backups.</p>
+
+          <div class="backup-buttons">
+            <button class="btn btn-secondary btn-full" id="exportDataBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Export Data (JSON)
+            </button>
+            <label class="btn btn-secondary btn-full file-upload-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Import Data (JSON)
+              <input type="file" id="importFileInput" accept=".json" style="display: none;">
+            </label>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="danger-zone">
+          <h4 class="section-subheading danger-text">Reset / Demo Data</h4>
+          <div class="danger-actions">
+            <button class="btn btn-secondary" id="reloadDemoBtn">Load Sample Courses (Theory + Labs)</button>
+            <button class="btn btn-danger" id="clearAllDataBtn">Clear All Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script src="app.js?v=20260903_4"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "bunkwise-75-attendance-tracker",
+  "version": "1.0.0",
+  "description": "Minimal, modern 75% attendance criteria and safe-to-skip tracker for college students",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": ["attendance", "college", "75-percent", "bunk-calculator"],
+  "author": "",
+  "license": "MIT"
+}
