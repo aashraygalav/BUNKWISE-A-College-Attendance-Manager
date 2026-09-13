@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ArrowUpRight, Activity, Terminal, ShieldAlert } from 'lucide-react';
 import { SoundFX } from '../engine/SoundFX';
+import upesBg from '../assets/upes_bidholi_bg.jpg';
 
 export default function Hero({ onOpenDashboard }) {
   const containerRef = useRef(null);
@@ -31,7 +32,7 @@ export default function Hero({ onOpenDashboard }) {
       <div className="absolute inset-0 z-0">
         <div
           className="absolute inset-0 bg-cover bg-center animate-subtle-drift opacity-40 scale-105"
-          style={{ backgroundImage: `url('/upes_bidholi_bg.jpg')` }}
+          style={{ backgroundImage: `url(${upesBg})` }}
         />
         {/* Heavy Primary-to-Black Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-void via-void/80 to-transparent" />
