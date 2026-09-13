@@ -10,12 +10,18 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowDownUp,
-  X
+  X,
+  Sliders,
+  ShieldAlert,
+  Zap,
+  TrendingUp
 } from 'lucide-react';
 import SubjectCard from './SubjectCard';
 import AddEditModal from './AddEditModal';
 import TodaysLogModal from './TodaysLogModal';
 import SettingsModal from './SettingsModal';
+import ScenarioSimulatorModal from './ScenarioSimulatorModal';
+import RecoveryPlannerModal from './RecoveryPlannerModal';
 import { AttendanceCalc, THEORY_MINUTES, LAB_MINUTES } from '../../engine/AttendanceCalc';
 import { SoundFX } from '../../engine/SoundFX';
 
@@ -35,6 +41,10 @@ export default function AttendanceDashboard({
   const [subjectToEdit, setSubjectToEdit] = useState(null);
   const [isTodaysLogOpen, setIsTodaysLogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
+  const [simulatorSubjectId, setSimulatorSubjectId] = useState(null);
+  const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
+  const [recoverySubjectId, setRecoverySubjectId] = useState(null);
 
   // Compute Overall Aggregate Statistics across all subjects
   const overallStats = useMemo(() => {
@@ -156,6 +166,23 @@ export default function AttendanceDashboard({
     });
   };
 
+  const tacticalRecommendations = useMemo(() => {
+    return AttendanceCalc.generateTacticalRecommendations(subjects, settings.defaultTarget || 75);
+  }, [subjects, settings]);
+
+  const handleApplySimulated = (subjectId, simulation) => {
+    const sub = subjects.find((s) => s.id === subjectId);
+    if (!sub) return;
+    const updated = {
+      ...sub,
+      theoryAttended: (sub.theoryAttended || 0) + simulation.addTheoryAttended,
+      theoryMissed: (sub.theoryMissed || 0) + simulation.addTheoryMissed,
+      labAttended: (sub.labAttended || 0) + simulation.addLabAttended,
+      labMissed: (sub.labMissed || 0) + simulation.addLabMissed
+    };
+    store.updateSubject(subjectId, updated);
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-8 py-10">
       {/* Header Controls Bar */}
@@ -176,6 +203,32 @@ export default function AttendanceDashboard({
 
         {/* Action Button Row */}
         <div className="flex items-center flex-wrap gap-2.5">
+          <button
+            onClick={() => {
+              SoundFX.playTick();
+              setSimulatorSubjectId(subjects[0]?.id);
+              setIsSimulatorOpen(true);
+            }}
+            className="px-4 py-2 rounded-full bg-plasma/20 hover:bg-plasma/30 border border-plasma/40 text-plasma-light font-sans text-xs font-semibold flex items-center gap-2 hover-lift"
+            title="Simulate future attendance and what-if scenarios"
+          >
+            <Sliders size={14} className="text-plasma-light" />
+            <span>Simulator</span>
+          </button>
+
+          <button
+            onClick={() => {
+              SoundFX.playWarning();
+              setRecoverySubjectId(null);
+              setIsRecoveryOpen(true);
+            }}
+            className="px-4 py-2 rounded-full bg-danger-crimson/15 hover:bg-danger-crimson/25 border border-danger-crimson/30 text-danger-crimson font-sans text-xs font-semibold flex items-center gap-2 hover-lift"
+            title="Shortage recovery roadmap"
+          >
+            <ShieldAlert size={14} className="text-danger-crimson" />
+            <span>Recovery</span>
+          </button>
+
           <button
             onClick={() => {
               SoundFX.playTap();
@@ -334,6 +387,89 @@ export default function AttendanceDashboard({
         </div>
       </div>
 
+      {/* TACTICAL DECISION COPILOT BANNER */}
+      {tacticalRecommendations.length > 0 && (
+        <div className="mb-8 rounded-[2.5rem] p-6 glass-panel border border-white/10 relative overflow-hidden bg-gradient-to-r from-void to-void-subtle shadow-xl">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div
+                className={`p-3 rounded-2xl border flex-shrink-0 ${
+                  tacticalRecommendations[0].status === 'danger'
+                    ? 'bg-danger-crimson/20 border-danger-crimson/40 text-danger-crimson animate-pulse'
+                    : tacticalRecommendations[0].status === 'warning'
+                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
+                    : 'bg-lime/20 border-lime/40 text-lime'
+                }`}
+              >
+                {tacticalRecommendations[0].status === 'danger' ? (
+                  <ShieldAlert size={24} />
+                ) : tacticalRecommendations[0].status === 'warning' ? (
+                  <AlertTriangle size={24} />
+                ) : (
+                  <CheckCircle2 size={24} />
+                )}
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/10 text-ghost/70 font-bold">
+                    TACTICAL DECISION PROTOCOL
+                  </span>
+                  <span
+                    className={`font-mono text-xs font-bold ${
+                      tacticalRecommendations[0].status === 'danger'
+                        ? 'text-danger-crimson'
+                        : tacticalRecommendations[0].status === 'warning'
+                        ? 'text-amber-400'
+                        : 'text-lime'
+                    }`}
+                  >
+                    {tacticalRecommendations[0].tacticalHeadline}
+                  </span>
+                </div>
+                <h4 className="font-sans font-bold text-base text-ghost mb-1">
+                  {tacticalRecommendations[0].name}: {tacticalRecommendations[0].actionDirective}
+                </h4>
+                <p className="font-sans text-xs text-ghost/50">
+                  {tacticalRecommendations[0].status === 'danger'
+                    ? 'Shortage recovery protocol engaged. Missing further classes will trigger exam detention.'
+                    : tacticalRecommendations[0].status === 'warning'
+                    ? 'Attendance buffer exhausted. Missing a single laboratory session (115m) drops status directly into shortage.'
+                    : 'Attendance buffer healthy across semester learning hours. Safe skips available within calculated criteria.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-end md:self-center flex-shrink-0">
+              {tacticalRecommendations[0].status === 'danger' ? (
+                <button
+                  onClick={() => {
+                    SoundFX.playWarning();
+                    setRecoverySubjectId(tacticalRecommendations[0].id);
+                    setIsRecoveryOpen(true);
+                  }}
+                  className="px-5 py-2.5 rounded-full bg-danger-crimson text-white font-sans text-xs font-bold shadow-[0_0_20px_rgba(255,59,48,0.4)] flex items-center gap-1.5 hover-lift"
+                >
+                  <ShieldAlert size={14} />
+                  <span>View Recovery Steps</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    SoundFX.playTick();
+                    setSimulatorSubjectId(tacticalRecommendations[0].id);
+                    setIsSimulatorOpen(true);
+                  }}
+                  className="px-5 py-2.5 rounded-full bg-plasma text-white font-sans text-xs font-bold shadow-[0_0_20px_rgba(123,97,255,0.4)] flex items-center gap-1.5 hover-lift"
+                >
+                  <Sliders size={14} />
+                  <span>Test In Simulator</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FILTER, SEARCH & SORT CONTROLS */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         {/* Filter Pills */}
@@ -350,9 +486,9 @@ export default function AttendanceDashboard({
                 SoundFX.playTap();
                 setFilter(tab.id);
               }}
-              className={`px-3.5 py-1.5 rounded-xl font-sans text-xs font-semibold transition-all ${
+              className={`px-4 py-2 rounded-xl font-sans text-xs font-semibold transition-all ${
                 filter === tab.id
-                  ? 'bg-plasma text-white shadow-md'
+                  ? 'bg-plasma text-white shadow-[0_0_15px_rgba(123,97,255,0.4)]'
                   : 'text-ghost/60 hover:text-white'
               }`}
             >
@@ -362,16 +498,16 @@ export default function AttendanceDashboard({
         </div>
 
         {/* Search & Sort Input */}
-        <div className="flex items-center gap-3 flex-1 sm:flex-initial">
+        <div className="flex items-center gap-3">
           {/* Search Box */}
-          <div className="relative flex-1 sm:w-56">
+          <div className="relative">
             <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ghost/40" />
             <input
               type="text"
-              placeholder="Search subject..."
+              placeholder="Search course or code..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-sans text-xs focus:border-plasma focus:outline-none"
+              className="pl-9 pr-4 py-2 rounded-xl bg-void-surface border border-white/10 text-white font-sans text-xs placeholder:text-ghost/40 focus:border-plasma focus:outline-none w-48 sm:w-60"
             />
           </div>
 
@@ -433,6 +569,14 @@ export default function AttendanceDashboard({
               onUndo={handleUndo}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onOpenSimulator={(id) => {
+                setSimulatorSubjectId(id);
+                setIsSimulatorOpen(true);
+              }}
+              onOpenRecovery={(id) => {
+                setRecoverySubjectId(id);
+                setIsRecoveryOpen(true);
+              }}
               targetPercent={settings.defaultTarget || 75}
             />
           ))}
@@ -440,6 +584,23 @@ export default function AttendanceDashboard({
       )}
 
       {/* Modals */}
+      <ScenarioSimulatorModal
+        isOpen={isSimulatorOpen}
+        onClose={() => setIsSimulatorOpen(false)}
+        subjects={subjects}
+        selectedSubjectId={simulatorSubjectId}
+        targetPercent={settings.defaultTarget || 75}
+        onApplySimulated={handleApplySimulated}
+      />
+
+      <RecoveryPlannerModal
+        isOpen={isRecoveryOpen}
+        onClose={() => setIsRecoveryOpen(false)}
+        subjects={subjects}
+        selectedSubjectId={recoverySubjectId}
+        targetPercent={settings.defaultTarget || 75}
+      />
+
       <AddEditModal
         isOpen={isAddEditOpen}
         onClose={() => setIsAddEditOpen(false)}

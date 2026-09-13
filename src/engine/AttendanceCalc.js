@@ -196,5 +196,194 @@ export const AttendanceCalc = {
       isImpossible,
       maxPossibleRate: maxPossibleRate.toFixed(1)
     };
+  },
+
+  /**
+   * Calculate exact percentage deltas for attending vs missing next Theory or Lab session
+   */
+  calculateDeltas(subject, defaultTarget = 75) {
+    const stats = this.compute(subject, defaultTarget);
+    const condMin = stats.conductedMinutes;
+    const attMin = stats.attendedMinutes;
+
+    // Next Theory
+    const afterAttendTheory = condMin === 0 ? 100 : ((attMin + THEORY_MINUTES) / (condMin + THEORY_MINUTES)) * 100;
+    const afterMissTheory = condMin === 0 ? 0 : (attMin / (condMin + THEORY_MINUTES)) * 100;
+
+    // Next Lab
+    const afterAttendLab = condMin === 0 ? 100 : ((attMin + LAB_MINUTES) / (condMin + LAB_MINUTES)) * 100;
+    const afterMissLab = condMin === 0 ? 0 : (attMin / (condMin + LAB_MINUTES)) * 100;
+
+    const cur = stats.currentRate;
+
+    return {
+      currentRate: cur,
+      afterAttendTheory,
+      afterMissTheory,
+      deltaAttendTheory: +(afterAttendTheory - cur).toFixed(2),
+      deltaMissTheory: +(afterMissTheory - cur).toFixed(2),
+      afterAttendLab,
+      afterMissLab,
+      deltaAttendLab: +(afterAttendLab - cur).toFixed(2),
+      deltaMissLab: +(afterMissLab - cur).toFixed(2)
+    };
+  },
+
+  /**
+   * Simulate a what-if scenario by projecting future attendance actions
+   */
+  simulateScenario(subject, simulation = {}, defaultTarget = 75) {
+    const {
+      addTheoryAttended = 0,
+      addTheoryMissed = 0,
+      addLabAttended = 0,
+      addLabMissed = 0
+    } = simulation;
+
+    const baseAttended = Number(subject.theoryAttended !== undefined ? subject.theoryAttended : (subject.attended || 0));
+    const baseMissed = Number(subject.theoryMissed !== undefined ? subject.theoryMissed : (subject.missed || 0));
+    const baseLabAttended = Number(subject.labAttended || 0);
+    const baseLabMissed = Number(subject.labMissed || 0);
+
+    const simulatedSubject = {
+      ...subject,
+      theoryAttended: Math.max(0, baseAttended + addTheoryAttended),
+      theoryMissed: Math.max(0, baseMissed + addTheoryMissed),
+      labAttended: Math.max(0, baseLabAttended + addLabAttended),
+      labMissed: Math.max(0, baseLabMissed + addLabMissed)
+    };
+
+    const originalStats = this.compute(subject, defaultTarget);
+    const simulatedStats = this.compute(simulatedSubject, defaultTarget);
+
+    return {
+      original: originalStats,
+      simulated: simulatedStats,
+      rateDiff: +(simulatedStats.currentRate - originalStats.currentRate).toFixed(2),
+      bufferDiffMinutes: simulatedStats.bufferMinutes - originalStats.bufferMinutes
+    };
+  },
+
+  /**
+   * Calculate step-by-step recovery milestone roadmap
+   */
+  calculateRecoveryRoadmap(subject, defaultTarget = 75) {
+    const stats = this.compute(subject, defaultTarget);
+    if (stats.currentRate >= stats.targetPercent) {
+      return { inShortage: false, steps: [] };
+    }
+
+    const targetRatio = stats.targetPercent / 100;
+    const theorySteps = [];
+    const labSteps = [];
+
+    // Theory trajectory
+    let att = stats.attendedMinutes;
+    let cond = stats.conductedMinutes;
+    for (let i = 1; i <= Math.min(25, stats.attendTheoryNeeded + 2); i++) {
+      att += THEORY_MINUTES;
+      cond += THEORY_MINUTES;
+      const rate = (att / cond) * 100;
+      theorySteps.push({
+        stepNumber: i,
+        type: 'Theory',
+        minutes: THEORY_MINUTES,
+        projectedRate: +rate.toFixed(1),
+        reachedTarget: rate >= stats.targetPercent
+      });
+      if (rate >= stats.targetPercent && theorySteps.length >= stats.attendTheoryNeeded) break;
+    }
+
+    // Lab trajectory (if applicable)
+    if (stats.hasLab) {
+      att = stats.attendedMinutes;
+      cond = stats.conductedMinutes;
+      for (let i = 1; i <= Math.min(15, stats.attendLabNeeded + 2); i++) {
+        att += LAB_MINUTES;
+        cond += LAB_MINUTES;
+        const rate = (att / cond) * 100;
+        labSteps.push({
+          stepNumber: i,
+          type: 'Lab',
+          minutes: LAB_MINUTES,
+          projectedRate: +rate.toFixed(1),
+          reachedTarget: rate >= stats.targetPercent
+        });
+        if (rate >= stats.targetPercent && labSteps.length >= stats.attendLabNeeded) break;
+      }
+    }
+
+    return {
+      inShortage: true,
+      targetPercent: stats.targetPercent,
+      currentRate: stats.currentRate,
+      attendTheoryNeeded: stats.attendTheoryNeeded,
+      attendLabNeeded: stats.attendLabNeeded,
+      theorySteps,
+      labSteps,
+      fasterWithLabRatio: '2.09×'
+    };
+  },
+
+  /**
+   * Generate prioritized actionable recommendations across all subjects
+   */
+  generateTacticalRecommendations(subjects = [], defaultTarget = 75) {
+    if (!subjects.length) return [];
+
+    const analyzed = subjects.map(sub => {
+      const stats = this.compute(sub, defaultTarget);
+      const deltas = this.calculateDeltas(sub, defaultTarget);
+      return { subject: sub, stats, deltas };
+    });
+
+    // Sort by urgency: danger first (lowest % first), then warning, then safe
+    analyzed.sort((a, b) => {
+      const priorityOrder = { danger: 0, warning: 1, safe: 2 };
+      if (priorityOrder[a.stats.status] !== priorityOrder[b.stats.status]) {
+        return priorityOrder[a.stats.status] - priorityOrder[b.stats.status];
+      }
+      return a.stats.currentRate - b.stats.currentRate;
+    });
+
+    return analyzed.map(({ subject, stats, deltas }) => {
+      let priority = 'LOW';
+      let tacticalHeadline = '';
+      let actionDirective = '';
+
+      if (stats.status === 'danger') {
+        priority = 'CRITICAL';
+        tacticalHeadline = `Shortage Protocol: ${stats.formattedRate}% (Goal: ${stats.targetPercent}%)`;
+        actionDirective = stats.hasLab
+          ? `Attend next ${stats.attendTheoryNeeded} Theory or ${stats.attendLabNeeded} Lab sessions without any missed classes.`
+          : `Attend next ${stats.attendTheoryNeeded} consecutive classes without missing.`;
+      } else if (stats.status === 'warning') {
+        priority = 'HIGH_ALERT';
+        tacticalHeadline = `Narrow Margin: ${stats.formattedRate}%`;
+        actionDirective = stats.hasLab
+          ? `DO NOT bunk Lab! Missing 1 Lab drops you by ${Math.abs(deltas.deltaMissLab)}% into shortage.`
+          : `Zero safe skips left. Attend next 2 classes to build a buffer.`;
+      } else {
+        priority = 'OPTIMAL';
+        tacticalHeadline = `Safe Surplus: ${stats.formattedRate}%`;
+        actionDirective = stats.hasLab
+          ? `Safe to miss up to ${stats.safeTheorySkips} Theory or ${stats.safeLabSkips} Lab. Buffer: ${(stats.bufferMinutes / 60).toFixed(1)} hrs.`
+          : `Safe to miss up to ${stats.safeTheorySkips} classes. Buffer: ${(stats.bufferMinutes / 60).toFixed(1)} hrs.`;
+      }
+
+      return {
+        id: subject.id,
+        name: subject.name,
+        code: subject.code || '',
+        currentRate: stats.currentRate,
+        formattedRate: stats.formattedRate,
+        status: stats.status,
+        priority,
+        tacticalHeadline,
+        actionDirective,
+        stats,
+        deltas
+      };
+    });
   }
 };

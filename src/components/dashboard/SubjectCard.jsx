@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2, Undo2, Plus, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Edit2, Trash2, Undo2, Plus, AlertCircle, CheckCircle, AlertTriangle, Sliders, ShieldAlert } from 'lucide-react';
 import { AttendanceCalc } from '../../engine/AttendanceCalc';
 import { SoundFX } from '../../engine/SoundFX';
 
@@ -9,6 +9,8 @@ export default function SubjectCard({
   onUndo,
   onEdit,
   onDelete,
+  onOpenSimulator,
+  onOpenRecovery,
   targetPercent = 75
 }) {
   const stats = AttendanceCalc.compute(subject, targetPercent);
@@ -60,6 +62,30 @@ export default function SubjectCard({
 
           {/* Action Icons */}
           <div className="flex items-center gap-1.5 text-ghost/50">
+            {stats.status === 'danger' && onOpenRecovery && (
+              <button
+                onClick={() => {
+                  SoundFX.playWarning();
+                  onOpenRecovery(subject.id);
+                }}
+                title="Open Shortage Recovery Protocol"
+                className="p-1.5 rounded-lg bg-danger-crimson/20 text-danger-crimson hover:bg-danger-crimson/30 transition-colors animate-pulse"
+              >
+                <ShieldAlert size={15} />
+              </button>
+            )}
+            {onOpenSimulator && (
+              <button
+                onClick={() => {
+                  SoundFX.playTick();
+                  onOpenSimulator(subject.id);
+                }}
+                title="Simulate What-If Scenarios"
+                className="p-1.5 rounded-lg hover:bg-white/10 hover:text-plasma-light transition-colors"
+              >
+                <Sliders size={15} />
+              </button>
+            )}
             <button
               onClick={() => {
                 SoundFX.playTap();
@@ -129,7 +155,7 @@ export default function SubjectCard({
 
         {/* Recommendation / Buffer Status Box */}
         <div
-          className={`p-3 rounded-2xl border mb-4 font-sans text-xs leading-relaxed ${
+          className={`p-3 rounded-2xl border mb-3 font-sans text-xs leading-relaxed ${
             stats.status === 'safe'
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
               : stats.status === 'warning'
@@ -140,6 +166,37 @@ export default function SubjectCard({
           <div className="font-semibold mb-0.5">{stats.message}</div>
           <div className="text-[11px] opacity-80">{stats.subMessage}</div>
         </div>
+
+        {/* Next-Class Impact Telemetry */}
+        {(() => {
+          const deltas = AttendanceCalc.calculateDeltas(subject, targetPercent);
+          return (
+            <div className="p-2.5 rounded-2xl bg-void-subtle border border-white/5 mb-4 font-mono text-[10px]">
+              <div className="text-ghost/40 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Next-Class Impact Deltas</span>
+                <span className="text-lime font-bold">2.09× LAB WEIGHT</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-1.5 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+                  <span className="text-ghost/60 font-sans text-[10px]">Theory (55m)</span>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-emerald-400 font-bold">+{deltas.deltaAttendTheory}%</span>
+                    <span className="text-rose-400 font-bold">{deltas.deltaMissTheory}%</span>
+                  </div>
+                </div>
+                {subject.hasLab && (
+                  <div className="p-1.5 rounded-xl bg-plasma/10 border border-plasma/20 flex flex-col justify-between">
+                    <span className="text-plasma-light font-sans text-[10px]">Lab (115m)</span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-emerald-400 font-bold">+{deltas.deltaAttendLab}%</span>
+                      <span className="text-rose-400 font-bold">{deltas.deltaMissLab}%</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Class Ledger Badges */}
         <div className="space-y-2 mb-4 font-sans text-xs">
