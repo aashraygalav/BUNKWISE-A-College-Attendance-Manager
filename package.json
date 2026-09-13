@@ -1,12 +1,39 @@
 {
   "name": "bunkwise-75-attendance-tracker",
-  "version": "1.0.0",
-  "description": "Minimal, modern 75% attendance criteria and safe-to-skip tracker for college students",
+  "version": "2.0.0",
+  "description": "BunkWise — Precision college attendance & learning hours optimizer for the 75% criteria",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "build": "echo Static build complete"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server.js"
   },
-  "keywords": ["attendance", "college", "75-percent", "bunk-calculator"],
-  "author": "",
+  "dependencies": {
+    "canvas-confetti": "^1.9.4",
+    "clsx": "^2.1.1",
+    "gsap": "^3.12.7",
+    "lucide-react": "^1.16.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.0.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.2.0"
+  },
+  "keywords": [
+    "attendance",
+    "college",
+    "75-percent",
+    "bunk-calculator",
+    "learning-hours",
+    "gsap",
+    "react19"
+  ],
+  "author": "Aashray Galav",
   "license": "MIT"
 }

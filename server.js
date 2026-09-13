@@ -1,6 +1,10 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = 3000;
 const MIME_TYPES = {
@@ -10,13 +14,19 @@ const MIME_TYPES = {
   '.json': 'application/json; charset=utf-8',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon'
 };
 
 const server = http.createServer((req, res) => {
   let cleanUrl = req.url.split('?')[0];
-  let filePath = path.join(__dirname, cleanUrl === '/' ? 'index.html' : cleanUrl);
+  let distPath = path.join(__dirname, 'dist', cleanUrl === '/' ? 'index.html' : cleanUrl);
+  let rootPath = path.join(__dirname, cleanUrl === '/' ? 'index.html' : cleanUrl);
+
+  let filePath = fs.existsSync(distPath) && fs.statSync(distPath).isFile()
+    ? distPath
+    : (fs.existsSync(rootPath) && fs.statSync(rootPath).isFile() ? rootPath : path.join(__dirname, 'dist', 'index.html'));
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
