@@ -16,15 +16,38 @@ export default function SubjectCard({
   const stats = AttendanceCalc.compute(subject, targetPercent);
 
   const getStatusBorder = () => {
-    if (stats.status === 'safe') return 'border-emerald-500/40 hover:border-emerald-400/70';
-    if (stats.status === 'warning') return 'border-amber-500/40 hover:border-amber-400/70';
-    return 'border-rose-500/50 hover:border-rose-400/80';
+    switch (stats.riskTier) {
+      case 'safe': return 'border-emerald-500/30 hover:border-emerald-400/60';
+      case 'caution': return 'border-amber-500/35 hover:border-amber-400/65';
+      case 'at_risk': return 'border-orange-500/40 hover:border-orange-400/70';
+      case 'critical': return 'border-rose-500/50 hover:border-rose-400/80';
+      default: return 'border-white/10';
+    }
   };
 
   const getDialColor = () => {
-    if (stats.status === 'safe') return '#10B981';
-    if (stats.status === 'warning') return '#F59E0B';
-    return '#F43F5E';
+    switch (stats.riskTier) {
+      case 'safe': return '#10B981';
+      case 'caution': return '#F59E0B';
+      case 'at_risk': return '#F97316';
+      case 'critical': return '#EF4444';
+      default: return '#10B981';
+    }
+  };
+
+  const getRiskBadge = () => {
+    switch (stats.riskTier) {
+      case 'safe':
+        return 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300';
+      case 'caution':
+        return 'bg-amber-500/15 border-amber-500/30 text-amber-300';
+      case 'at_risk':
+        return 'bg-orange-500/20 border-orange-500/35 text-orange-300';
+      case 'critical':
+        return 'bg-rose-500/20 border-rose-500/40 text-rose-300';
+      default:
+        return 'bg-white/10 text-ghost';
+    }
   };
 
   // SVG Radial stroke dash calculation (radius = 32, circumference = 2 * PI * 32 = 201.06)
@@ -112,8 +135,13 @@ export default function SubjectCard({
         {/* Rate & Dial Row */}
         <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-void-subtle/80 border border-white/5 mb-4">
           <div>
-            <div className="font-mono text-3xl font-extrabold text-white tracking-tight">
-              {stats.formattedRate}%
+            <div className="flex items-center gap-2.5">
+              <span className="font-mono text-3xl font-extrabold text-white tracking-tight">
+                {stats.formattedRate}%
+              </span>
+              <span className={`font-mono text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase ${getRiskBadge()}`}>
+                {stats.riskLabel}
+              </span>
             </div>
             <div className="font-sans text-xs text-ghost/60 mt-0.5">
               <strong className="text-white">{stats.attendedHours}</strong> / {stats.conductedHours} Learning Hours

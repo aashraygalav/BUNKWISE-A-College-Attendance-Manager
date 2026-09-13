@@ -152,6 +152,31 @@ export const AttendanceCalc = {
       }
     }
 
+    // 4-Tier Standardized Risk Classification:
+    // Safe: >= 80.0% (or 0 conducted)
+    // Caution: 75.0% - 79.9%
+    // At Risk: 70.0% - 74.9%
+    // Critical: < 70.0% or mathematically unrecoverable
+    let riskTier = 'safe';
+    let riskLabel = 'Safe';
+
+    if (conductedMinutes === 0) {
+      riskTier = 'safe';
+      riskLabel = 'Safe';
+    } else if (isImpossible || currentRate < 70.0) {
+      riskTier = 'critical';
+      riskLabel = 'Critical';
+    } else if (currentRate < targetPercent) {
+      riskTier = 'at_risk';
+      riskLabel = 'At Risk';
+    } else if (currentRate < 80.0) {
+      riskTier = 'caution';
+      riskLabel = 'Caution';
+    } else {
+      riskTier = 'safe';
+      riskLabel = 'Safe';
+    }
+
     return {
       hasLab,
       theoryTotal,
@@ -186,6 +211,8 @@ export const AttendanceCalc = {
       currentRate,
       formattedRate,
       status,
+      riskTier,
+      riskLabel,
       message,
       subMessage,
       safeTheorySkips,
@@ -337,34 +364,42 @@ export const AttendanceCalc = {
       return { subject: sub, stats, deltas };
     });
 
-    // Sort by urgency: danger first (lowest % first), then warning, then safe
+    // Sort by urgency: critical first, then at_risk, then caution, then safe
     analyzed.sort((a, b) => {
-      const priorityOrder = { danger: 0, warning: 1, safe: 2 };
-      if (priorityOrder[a.stats.status] !== priorityOrder[b.stats.status]) {
-        return priorityOrder[a.stats.status] - priorityOrder[b.stats.status];
+      const priorityOrder = { critical: 0, at_risk: 1, caution: 2, safe: 3 };
+      const rankA = priorityOrder[a.stats.riskTier] ?? 4;
+      const rankB = priorityOrder[b.stats.riskTier] ?? 4;
+      if (rankA !== rankB) {
+        return rankA - rankB;
       }
       return a.stats.currentRate - b.stats.currentRate;
     });
 
     return analyzed.map(({ subject, stats, deltas }) => {
-      let priority = 'LOW';
+      let priority = 'SAFE';
       let tacticalHeadline = '';
       let actionDirective = '';
 
-      if (stats.status === 'danger') {
+      if (stats.riskTier === 'critical') {
         priority = 'CRITICAL';
-        tacticalHeadline = `Shortage Protocol: ${stats.formattedRate}% (Goal: ${stats.targetPercent}%)`;
+        tacticalHeadline = `Critical Detention Risk: ${stats.formattedRate}% (Goal: ${stats.targetPercent}%)`;
         actionDirective = stats.hasLab
-          ? `Attend next ${stats.attendTheoryNeeded} Theory or ${stats.attendLabNeeded} Lab sessions without any missed classes.`
-          : `Attend next ${stats.attendTheoryNeeded} consecutive classes without missing.`;
-      } else if (stats.status === 'warning') {
-        priority = 'HIGH_ALERT';
-        tacticalHeadline = `Narrow Margin: ${stats.formattedRate}%`;
+          ? `Urgent: Attend next ${stats.attendTheoryNeeded} Theory or ${stats.attendLabNeeded} Lab sessions consecutively to avoid exam bar.`
+          : `Urgent: Attend next ${stats.attendTheoryNeeded} consecutive classes without missing.`;
+      } else if (stats.riskTier === 'at_risk') {
+        priority = 'AT_RISK';
+        tacticalHeadline = `Shortage Protocol Active: ${stats.formattedRate}%`;
         actionDirective = stats.hasLab
-          ? `DO NOT bunk Lab! Missing 1 Lab drops you by ${Math.abs(deltas.deltaMissLab)}% into shortage.`
-          : `Zero safe skips left. Attend next 2 classes to build a buffer.`;
+          ? `Deficit detected: Attend next ${stats.attendTheoryNeeded} Theory or ${stats.attendLabNeeded} Lab to cross 75%.`
+          : `Deficit detected: Attend next ${stats.attendTheoryNeeded} consecutive classes to cross 75%.`;
+      } else if (stats.riskTier === 'caution') {
+        priority = 'CAUTION';
+        tacticalHeadline = `Narrow Cushion (${stats.formattedRate}%)`;
+        actionDirective = stats.hasLab
+          ? `Caution: DO NOT miss Lab! 1 missed Lab drops you by ${Math.abs(deltas.deltaMissLab)}% directly into shortage.`
+          : `Zero safe skips left. Attend next 2 classes to build a safe buffer.`;
       } else {
-        priority = 'OPTIMAL';
+        priority = 'SAFE';
         tacticalHeadline = `Safe Surplus: ${stats.formattedRate}%`;
         actionDirective = stats.hasLab
           ? `Safe to miss up to ${stats.safeTheorySkips} Theory or ${stats.safeLabSkips} Lab. Buffer: ${(stats.bufferMinutes / 60).toFixed(1)} hrs.`
