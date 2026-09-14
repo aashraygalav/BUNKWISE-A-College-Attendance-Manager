@@ -48,7 +48,7 @@ export default function AddEditModal({ isOpen, onClose, onSave, subjectToEdit, d
   const recalculateHoursFromClasses = (th, lb, labEnabled) => {
     const thMins = (parseInt(th, 10) || 0) * THEORY_MINUTES;
     const lbMins = labEnabled ? (parseInt(lb, 10) || 0) * LAB_MINUTES : 0;
-    const hrs = ((thMins + lbMins) / 60).toFixed(1);
+    const hrs = ((thMins + lbMins) / 60).toFixed(2);
     setTotalLearningHours(hrs);
   };
 
@@ -124,7 +124,7 @@ export default function AddEditModal({ isOpen, onClose, onSave, subjectToEdit, d
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
             <div>
               <div className="text-white font-semibold">Includes Laboratory Session?</div>
-              <div className="text-ghost/50 text-[11px]">Adds 115m lab tracking (2.09× theory weight)</div>
+              <div className="text-ghost/50 text-[11px]">Adds 115m lab tracking (2.09× Lab weight)</div>
             </div>
             <input
               type="checkbox"
@@ -152,10 +152,10 @@ export default function AddEditModal({ isOpen, onClose, onSave, subjectToEdit, d
             </div>
             <input
               type="number"
-              step="0.1"
+              step="0.01"
               value={totalLearningHours}
               onChange={(e) => setTotalLearningHours(e.target.value)}
-              placeholder="e.g. 97.1"
+              placeholder="e.g. 40.32"
               className="w-full px-3.5 py-2 rounded-xl bg-void/70 border border-white/10 text-white font-mono text-sm focus:border-lime focus:outline-none"
             />
             <div className="text-[10px] text-ghost/50 mt-1">

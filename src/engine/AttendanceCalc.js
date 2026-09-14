@@ -162,13 +162,14 @@ export const AttendanceCalc = {
       if (currentSafeTheorySkips > 0 || (hasLab && currentSafeLabSkips > 0)) {
         riskState = 'SAFE';
         status = 'safe';
-        const bufHours = (bufferMinutes / 60).toFixed(2);
         if (hasLab) {
-          message = `Safe margin: ${bufHours} hrs. Skip up to ${currentSafeTheorySkips} Theory or ${currentSafeLabSkips} Lab next.`;
-          subMessage = `Semester allowance remaining: ${remainingSemesterTheorySkips} Theory or ${remainingSemesterLabSkips} Lab sessions.`;
+          message = currentSafeLabSkips > 0
+            ? `You're safe — you can miss ${currentSafeTheorySkips} Theory or ${currentSafeLabSkips} Lab classes.`
+            : `You're safe — you can miss ${currentSafeTheorySkips} more Theory ${currentSafeTheorySkips === 1 ? 'class' : 'classes'} (0 Labs).`;
+          subMessage = `Current safe margin: ${(bufferMinutes / 60).toFixed(2)} hrs.`;
         } else {
-          message = `You can safely miss ${currentSafeTheorySkips} ${currentSafeTheorySkips === 1 ? 'class' : 'classes'} in a row.`;
-          subMessage = `Safe margin: ${bufHours} hrs. Semester allowance remaining: ${remainingSemesterTheorySkips} classes.`;
+          message = `You're safe — you can miss ${currentSafeTheorySkips} more Theory ${currentSafeTheorySkips === 1 ? 'class' : 'classes'}.`;
+          subMessage = `Current safe margin: ${(bufferMinutes / 60).toFixed(2)} hrs.`;
         }
       } else {
         // Borderline condition: >= target, but missing 1 class drops below target
@@ -178,11 +179,11 @@ export const AttendanceCalc = {
         const rateIfMissLab = hasLab ? ((attendedMinutes / (conductedMinutes + LAB_MINUTES)) * 100).toFixed(1) : null;
 
         if (hasLab) {
-          message = `On the margin (${formattedRate}%). Missing 1 Theory drops to ${rateIfMissTheory}%; 1 Lab drops to ${rateIfMissLab}%.`;
+          message = `You're at the threshold (${formattedRate}%) — missing 1 Theory drops to ${rateIfMissTheory}%; 1 Lab drops to ${rateIfMissLab}%.`;
           subMessage = `Zero safe skips left right now. Attend upcoming sessions to build your buffer.`;
         } else {
-          message = `On the margin (${formattedRate}%). Missing the next class drops to ${rateIfMissTheory}%.`;
-          subMessage = `Zero safe skips left right now. Attend the next class to build your buffer.`;
+          message = `You're at the threshold (${formattedRate}%) — missing the next class drops you below ${targetPercent}%.`;
+          subMessage = `Missing drops to ${rateIfMissTheory}%. Attend the next class to build your buffer.`;
         }
       }
     } else {
@@ -197,10 +198,10 @@ export const AttendanceCalc = {
         const neededHours = ((Math.ceil((targetRatio * conductedMinutes - attendedMinutes) / (1 - targetRatio))) / 60).toFixed(2);
 
         if (hasLab) {
-          message = `Below ${targetPercent}%. Attend next ${attendTheoryNeeded} Theory or ${attendLabNeeded} Lab sessions to recover.`;
-          subMessage = `Labs recover attendance 2.09× faster. Post-recovery attendance will be ${postRecoveryRate}%.`;
+          message = `Attend the next ${attendTheoryNeeded} Theory or ${attendLabNeeded} Lab sessions to recover to ${targetPercent}%.`;
+          subMessage = `2.09× Lab weight. Post-recovery attendance will be ${postRecoveryRate}%.`;
         } else {
-          message = `Below ${targetPercent}%. Attend next ${attendTheoryNeeded} consecutive classes to recover.`;
+          message = `Attend the next ${attendTheoryNeeded} Theory ${attendTheoryNeeded === 1 ? 'class' : 'classes'} to recover to ${targetPercent}%.`;
           subMessage = `Requires ${neededHours} hrs. Post-recovery attendance will be ${postRecoveryRate}%.`;
         }
       }
@@ -265,11 +266,180 @@ export const AttendanceCalc = {
       postRecoveryBufferMinutes,
       postRecoverySafeTheorySkips,
       postRecoverySafeLabSkips,
+      recoveryCombinations: this.getRecoveryCombinations(subject, { targetPercent }),
 
       bufferMinutes,
       isImpossible,
       maxPossibleRate: maxPossibleRate.toFixed(1)
     };
+  },
+
+  /**
+   * Pure calculation function for mixed Theory + Lab recovery combinations.
+   * Answers the core BunkWise question:
+   * "How many Theory classes AND how many Lab sessions do I need to attend,
+   * in what combinations, to recover to at least targetPercent%?"
+   *
+   * 2D integer combination search satisfying:
+   * 55T + 115L >= requiredWeightedMinutes
+   * where requiredWeightedMinutes = max(0, 3C - 4A) for 75% target.
+   *
+   * @param {Object} subject
+   * @param {Object} options - { maxTheorySessions, maxLabSessions, targetPercent = 75 }
+   * @returns {Array} Array of valid combination objects ranked by fewest sessions, then lowest overshoot
+   */
+  getRecoveryCombinations(
+    subject,
+    {
+      maxTheorySessions,
+      maxLabSessions,
+      targetPercent = 75
+    } = {}
+  ) {
+    const target = Number(targetPercent || subject.targetPercent || 75);
+    const targetRatio = target / 100;
+    const hasLab = Boolean(subject.hasLab);
+
+    // Theory session counts
+    const theoryTotal = Math.max(1, Number(subject.theoryTotal || subject.totalSemClasses || 42));
+    const theoryAttended = Math.max(0, Number(subject.theoryAttended !== undefined ? subject.theoryAttended : (subject.attended || 0)));
+    const theoryMissed = Math.max(0, Number(subject.theoryMissed !== undefined ? subject.theoryMissed : (subject.missed || 0)));
+    const theoryConducted = theoryAttended + theoryMissed;
+    const theoryRemaining = Math.max(0, theoryTotal - theoryConducted);
+
+    // Lab session counts
+    const labTotal = hasLab ? Math.max(0, Number(subject.labTotal || 0)) : 0;
+    const labAttended = hasLab ? Math.max(0, Number(subject.labAttended || 0)) : 0;
+    const labMissed = hasLab ? Math.max(0, Number(subject.labMissed || 0)) : 0;
+    const labConducted = labAttended + labMissed;
+    const labRemaining = Math.max(0, labTotal - labConducted);
+
+    // Contact minute calculations
+    const A = (theoryAttended * THEORY_MINUTES) + (labAttended * LAB_MINUTES);
+    const C = (theoryConducted * THEORY_MINUTES) + (labConducted * LAB_MINUTES);
+    const currentRate = C === 0 ? 100 : (A / C) * 100;
+
+    // Total course learning minutes & max possible rate calculation
+    const customTotalHours = (subject.totalLearningHours !== null && subject.totalLearningHours !== undefined && subject.totalLearningHours !== '')
+      ? parseFloat(subject.totalLearningHours)
+      : NaN;
+    const totalSemMinutes = (!isNaN(customTotalHours) && customTotalHours > 0)
+      ? Math.round(customTotalHours * 60)
+      : ((theoryTotal * THEORY_MINUTES) + (labTotal * LAB_MINUTES));
+    const remainingMinutes = Math.max(0, totalSemMinutes - C);
+    const maxPossibleRate = totalSemMinutes === 0 ? 100 : ((A + remainingMinutes) / totalSemMinutes) * 100;
+
+    const combinations = [];
+
+    // Zero-Session / Already-Safe Check:
+    // If conducted minutes is 0 or current attendance rate is >= target, no recovery is needed.
+    // Exact integer comparison for 75% target: 4A >= 3C
+    const isAlreadySafe = C === 0 || (target === 75 ? (4 * A >= 3 * C) : (currentRate >= target));
+    if (isAlreadySafe) {
+      combinations.alreadyAboveTarget = true;
+      combinations.isImpossible = false;
+      combinations.requiredWeightedMinutes = 0;
+      combinations.currentRate = +currentRate.toFixed(1);
+      combinations.targetPercent = target;
+      combinations.maxPossibleRate = maxPossibleRate.toFixed(1);
+      return combinations;
+    }
+
+    // Exact required deficit calculation:
+    // For 75% target: 4*(A + 55T + 115L) >= 3*(C + 55T + 115L) <=> 55T + 115L >= 3C - 4A
+    const requiredWeightedMinutes = target === 75
+      ? Math.max(0, (3 * C) - (4 * A))
+      : Math.max(0, Math.ceil((targetRatio * C - A) / (1 - targetRatio)));
+
+    // Determine session availability limits
+    const maxTheoryAllowed = maxTheorySessions !== undefined
+      ? Math.max(0, Math.min(theoryRemaining, Number(maxTheorySessions)))
+      : theoryRemaining;
+
+    const maxLabAllowed = hasLab
+      ? (maxLabSessions !== undefined
+          ? Math.max(0, Math.min(labRemaining, Number(maxLabSessions)))
+          : labRemaining)
+      : 0;
+
+    // 2D Integer Combination Search:
+    // Iterate L from 0 up to maxLabAllowed.
+    // For each L, determine minimum T >= 0 such that: 55T + 115L >= requiredWeightedMinutes
+    for (let L = 0; L <= maxLabAllowed; L++) {
+      const remReq = requiredWeightedMinutes - (L * LAB_MINUTES);
+      const T = remReq <= 0 ? 0 : Math.ceil(remReq / THEORY_MINUTES);
+
+      if (T <= maxTheoryAllowed) {
+        const weightedRecoveryMinutes = (T * THEORY_MINUTES) + (L * LAB_MINUTES);
+        const projectedAttendedMinutes = A + weightedRecoveryMinutes;
+        const projectedConductedMinutes = C + weightedRecoveryMinutes;
+        const rawRate = (projectedAttendedMinutes / projectedConductedMinutes) * 100;
+        const projectedRate = +rawRate.toFixed(1);
+        const rateGain = +(projectedRate - currentRate).toFixed(1);
+
+        // Exact threshold verification without float inaccuracy
+        const targetReached = target === 75
+          ? (4 * projectedAttendedMinutes >= 3 * projectedConductedMinutes)
+          : (projectedAttendedMinutes / projectedConductedMinutes >= targetRatio);
+
+        // Post-recovery safe-bunk margin
+        const projectedBufferMinutes = Math.max(0, Math.floor(projectedAttendedMinutes / targetRatio - projectedConductedMinutes));
+        const remainingSafeTheorySkips = Math.floor(projectedBufferMinutes / THEORY_MINUTES);
+        const remainingSafeLabSkips = hasLab ? Math.floor(projectedBufferMinutes / LAB_MINUTES) : 0;
+
+        combinations.push({
+          theorySessions: T,
+          labSessions: L,
+          totalSessions: T + L,
+          weightedRecoveryMinutes,
+          projectedAttendedMinutes,
+          projectedConductedMinutes,
+          projectedRate,
+          rateGain,
+          targetReached,
+          remainingSafeTheorySkips,
+          remainingSafeLabSkips,
+          projectedBufferMinutes,
+          isTheoryOnly: L === 0,
+          isLabOnly: T === 0,
+          isBalanced: T > 0 && L > 0
+        });
+      }
+
+      // Stop condition: once L labs alone is sufficient (T = 0),
+      // any higher L will strictly overshoot with redundant lab sessions.
+      if (remReq <= 0) {
+        break;
+      }
+    }
+
+    // Ranking:
+    // Primary: Fewest total sessions (ascending)
+    // Secondary: Lowest overshoot above target (projectedRate ascending)
+    // Tertiary: Lowest weighted recovery minutes (ascending)
+    combinations.sort((a, b) => {
+      if (a.totalSessions !== b.totalSessions) {
+        return a.totalSessions - b.totalSessions;
+      }
+      if (a.projectedRate !== b.projectedRate) {
+        return a.projectedRate - b.projectedRate;
+      }
+      return a.weightedRecoveryMinutes - b.weightedRecoveryMinutes;
+    });
+
+    const minTotalSessions = combinations.length > 0 ? combinations[0].totalSessions : 0;
+    combinations.forEach(combo => {
+      combo.isFewestSessions = combo.totalSessions === minTotalSessions;
+    });
+
+    combinations.alreadyAboveTarget = false;
+    combinations.isImpossible = combinations.length === 0;
+    combinations.requiredWeightedMinutes = requiredWeightedMinutes;
+    combinations.currentRate = +currentRate.toFixed(1);
+    combinations.targetPercent = target;
+    combinations.maxPossibleRate = maxPossibleRate.toFixed(1);
+
+    return combinations;
   },
 
   /**
@@ -436,12 +606,27 @@ export const AttendanceCalc = {
   },
 
   /**
-   * Calculate step-by-step recovery milestone roadmap for shortage recovery.
+   * Calculate mixed recovery roadmap and combination options for shortage recovery.
    */
   calculateRecoveryRoadmap(subject, defaultTarget = 75) {
     const stats = this.compute(subject, defaultTarget);
-    if (stats.currentRate >= stats.targetPercent) {
-      return { inShortage: false, steps: [] };
+    const combinations = this.getRecoveryCombinations(subject, { targetPercent: defaultTarget });
+
+    if (stats.currentRate >= stats.targetPercent || combinations.alreadyAboveTarget) {
+      return {
+        inShortage: false,
+        alreadyAboveTarget: true,
+        targetPercent: stats.targetPercent,
+        currentRate: stats.currentRate,
+        formattedRate: stats.formattedRate,
+        safeTheorySkips: stats.currentSafeTheorySkips,
+        safeLabSkips: stats.currentSafeLabSkips,
+        combinations: [],
+        recoveryCombinations: [],
+        steps: [],
+        theorySteps: [],
+        labSteps: []
+      };
     }
 
     const theorySteps = [];
@@ -485,8 +670,16 @@ export const AttendanceCalc = {
 
     return {
       inShortage: true,
+      alreadyAboveTarget: false,
+      isImpossible: combinations.isImpossible || stats.isImpossible,
+      maxPossibleRate: stats.maxPossibleRate,
       targetPercent: stats.targetPercent,
       currentRate: stats.currentRate,
+      formattedRate: stats.formattedRate,
+      requiredWeightedMinutes: combinations.requiredWeightedMinutes,
+      combinations,
+      recoveryCombinations: combinations,
+      fewestSessionsCombination: combinations[0] || null,
       attendTheoryNeeded: stats.attendTheoryNeeded,
       attendLabNeeded: stats.attendLabNeeded,
       postRecoveryRate: stats.postRecoveryRate,

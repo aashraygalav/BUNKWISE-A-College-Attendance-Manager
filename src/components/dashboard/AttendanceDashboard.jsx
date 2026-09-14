@@ -69,10 +69,10 @@ export default function AttendanceDashboard({
     const currentRate = conductedMins === 0 ? 100 : (totalAttendedMins / conductedMins) * 100;
 
     return {
-      attendedHours: (totalAttendedMins / 60).toFixed(1),
-      missedHours: (totalMissedMins / 60).toFixed(1),
-      conductedHours: (conductedMins / 60).toFixed(1),
-      totalSemHours: (totalSemMins / 60).toFixed(1),
+      attendedHours: (totalAttendedMins / 60).toFixed(2),
+      missedHours: (totalMissedMins / 60).toFixed(2),
+      conductedHours: (conductedMins / 60).toFixed(2),
+      totalSemHours: (totalSemMins / 60).toFixed(2),
       currentRate: currentRate.toFixed(1),
       rateNumber: currentRate,
       conductedClasses: totalClassesAttended + totalClassesMissed,
@@ -217,6 +217,7 @@ export default function AttendanceDashboard({
           </button>
 
           <button
+            type="button"
             onClick={() => {
               SoundFX.playWarning();
               setRecoverySubjectId(null);
@@ -301,7 +302,7 @@ export default function AttendanceDashboard({
               </span>
             </div>
             <p className="font-sans text-xs text-ghost/60 max-w-xs font-light">
-              Overall contact hours calculation. Attending labs restores percentage &gt;2× faster than theory.
+              Overall contact hours calculation with 2.09× Lab weight (115m Lab vs 55m Theory).
             </p>
           </div>
 
@@ -431,7 +432,7 @@ export default function AttendanceDashboard({
                 </h4>
                 <p className="font-sans text-xs text-ghost/50">
                   {tacticalRecommendations[0].status === 'danger'
-                    ? 'Shortage recovery protocol engaged. Missing further classes will trigger exam detention.'
+                    ? 'Attendance is below target criteria. Attend upcoming sessions to restore your buffer above 75%.'
                     : tacticalRecommendations[0].status === 'warning'
                     ? 'Attendance buffer exhausted. Missing a single laboratory session (115m) drops status directly into shortage.'
                     : 'Attendance buffer healthy across semester learning hours. Safe skips available within calculated criteria.'}
@@ -442,6 +443,7 @@ export default function AttendanceDashboard({
             <div className="flex items-center gap-2 self-end md:self-center flex-shrink-0">
               {tacticalRecommendations[0].status === 'danger' ? (
                 <button
+                  type="button"
                   onClick={() => {
                     SoundFX.playWarning();
                     setRecoverySubjectId(tacticalRecommendations[0].id);

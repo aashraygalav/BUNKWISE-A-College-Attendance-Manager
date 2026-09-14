@@ -63,7 +63,7 @@ export default function ScenarioSimulatorModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-void/80 backdrop-blur-xl animate-fade-in">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6 bg-void/80 backdrop-blur-xl animate-fadeIn">
       <div
         className="glass-panel w-full max-w-3xl rounded-[2.5rem] border border-white/10 p-6 sm:p-8 bg-void-surface relative shadow-2xl max-h-[92vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
