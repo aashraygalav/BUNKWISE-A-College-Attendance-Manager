@@ -67,28 +67,16 @@ export default function Navbar({ onOpenDashboard, activeSection }) {
         {/* Navigation Links */}
         <div className="hidden md:flex items-center gap-6 font-sans text-xs font-medium tracking-wide text-ghost/70">
           <button
-            onClick={() => scrollTo('features')}
+            onClick={() => scrollTo('dashboard-section')}
             className="hover-lift hover:text-white transition-colors"
           >
-            Engine
-          </button>
-          <button
-            onClick={() => scrollTo('protocol')}
-            className="hover-lift hover:text-white transition-colors"
-          >
-            Protocol
+            Cockpit
           </button>
           <button
             onClick={() => scrollTo('philosophy')}
             className="hover-lift hover:text-white transition-colors"
           >
             Manifesto
-          </button>
-          <button
-            onClick={() => scrollTo('pricing')}
-            className="hover-lift hover:text-white transition-colors"
-          >
-            Tiers
           </button>
         </div>
 

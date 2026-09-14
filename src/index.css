@@ -124,3 +124,150 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
+
+/* ==========================================================================
+   Precision Technical Instrument & Dark Material System
+   ========================================================================== */
+
+/* Extremely Restrained Technical Hairline Grid (0.7% opacity, deep vignette) */
+.instrument-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.007) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.007) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse 75% 55% at 50% 30%, black 20%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 55% at 50% 30%, black 20%, transparent 100%);
+}
+
+/* Matte Deep Charcoal Instrument Card Substrate */
+.instrument-card {
+  background: linear-gradient(180deg, #111119 0%, #0B0B10 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 
+    0 10px 30px -5px rgba(0, 0, 0, 0.75), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.instrument-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.11);
+  box-shadow: 
+    0 14px 36px -5px rgba(0, 0, 0, 0.85), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Status Directional Edge Hairline Tooling (No Diffuse Neon Glow) */
+.instrument-card-safe {
+  border-top-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 
+    0 10px 30px -5px rgba(0, 0, 0, 0.75), 
+    inset 0 1px 0 rgba(16, 185, 129, 0.18);
+}
+.instrument-card-safe:hover {
+  border-top-color: rgba(16, 185, 129, 0.7);
+  box-shadow: 
+    0 14px 36px -5px rgba(0, 0, 0, 0.85), 
+    inset 0 1px 0 rgba(16, 185, 129, 0.25);
+}
+
+.instrument-card-caution {
+  border-top-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 
+    0 10px 30px -5px rgba(0, 0, 0, 0.75), 
+    inset 0 1px 0 rgba(245, 158, 11, 0.18);
+}
+.instrument-card-caution:hover {
+  border-top-color: rgba(245, 158, 11, 0.7);
+  box-shadow: 
+    0 14px 36px -5px rgba(0, 0, 0, 0.85), 
+    inset 0 1px 0 rgba(245, 158, 11, 0.25);
+}
+
+.instrument-card-danger {
+  border-top-color: rgba(255, 59, 48, 0.6);
+  border-color: rgba(255, 59, 48, 0.2);
+  box-shadow: 
+    0 10px 30px -5px rgba(0, 0, 0, 0.75), 
+    inset 0 1px 0 rgba(255, 59, 48, 0.22);
+}
+.instrument-card-danger:hover {
+  border-top-color: rgba(255, 59, 48, 0.8);
+  border-color: rgba(255, 59, 48, 0.3);
+  box-shadow: 
+    0 14px 36px -5px rgba(0, 0, 0, 0.85), 
+    inset 0 1px 0 rgba(255, 59, 48, 0.3);
+}
+
+/* ==========================================================================
+   3D Card Flip Recovery System
+   ========================================================================== */
+.flip-card-perspective {
+  perspective: 1200px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flip-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  width: 100%;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+  position: absolute;
+  inset: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-card-inner {
+    transition: transform 0.05s ease !important;
+  }
+}
+
+/* Dedicated Recovery Command Center Bezel (Matte Dark Technical Chassis) */
+.recovery-card-frame {
+  background: linear-gradient(180deg, #101017 0%, #0A0A0F 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(123, 97, 255, 0.3);
+  border-top: 1px solid rgba(123, 97, 255, 0.6);
+  box-shadow: 
+    0 16px 40px -8px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(123, 97, 255, 0.25);
+}
+
+/* Smooth Accordion Motion Transition */
+.accordion-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.accordion-grid.open {
+  grid-template-rows: 1fr;
+}
+.accordion-inner {
+  overflow: hidden;
+}
+
+/* Tactile Button Feedback */
+.btn-tactile {
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.12s ease, border-color 0.12s ease;
+}
+.btn-tactile:active {
+  transform: scale(0.97);
+}

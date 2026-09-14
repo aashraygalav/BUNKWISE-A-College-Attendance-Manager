@@ -45,7 +45,7 @@ export default function Protocol() {
   }, []);
 
   return (
-    <section id="protocol" ref={containerRef} className="relative w-full bg-void">
+    <section id="protocol" ref={containerRef} className="relative w-full bg-transparent">
       {/* SECTION TITLE BANNER */}
       <div className="pt-24 pb-8 px-6 sm:px-12 md:px-20 max-w-7xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-void-surface border border-white/10 text-xs font-mono text-lime mb-3">
@@ -57,7 +57,7 @@ export default function Protocol() {
       </div>
 
       {/* CARD 01: Schedule Calibration */}
-      <div className="protocol-card min-h-screen w-full flex items-center justify-center px-6 py-16 bg-void">
+      <div className="protocol-card min-h-screen w-full flex items-center justify-center px-6 py-16 bg-[#08090C]/85">
         <div className="glass-panel w-full max-w-5xl rounded-[3rem] p-8 sm:p-12 md:p-16 flex flex-col md:flex-row items-center justify-between gap-12 relative overflow-hidden border border-white/10">
           <div className="flex-1 max-w-lg z-10">
             <span className="font-mono text-sm font-bold text-plasma-light tracking-widest block mb-4">
@@ -89,7 +89,7 @@ export default function Protocol() {
       </div>
 
       {/* CARD 02: Daily Contact Logging */}
-      <div className="protocol-card min-h-screen w-full flex items-center justify-center px-6 py-16 bg-void">
+      <div className="protocol-card min-h-screen w-full flex items-center justify-center px-6 py-16 bg-[#08090C]/85">
         <div className="glass-panel w-full max-w-5xl rounded-[3rem] p-8 sm:p-12 md:p-16 flex flex-col md:flex-row items-center justify-between gap-12 relative overflow-hidden border border-white/10">
           <div className="flex-1 max-w-lg z-10">
             <span className="font-mono text-sm font-bold text-lime tracking-widest block mb-4">
@@ -127,7 +127,7 @@ export default function Protocol() {
       </div>
 
       {/* CARD 03: Margin Optimization */}
-      <div className="protocol-card min-h-screen w-full flex items-center justify-center px-6 py-16 bg-void">
+      <div className="protocol-card min-h-screen w-full flex items-center justify-center px-6 py-16 bg-[#08090C]/85">
         <div className="glass-panel w-full max-w-5xl rounded-[3rem] p-8 sm:p-12 md:p-16 flex flex-col md:flex-row items-center justify-between gap-12 relative overflow-hidden border border-white/10">
           <div className="flex-1 max-w-lg z-10">
             <span className="font-mono text-sm font-bold text-plasma-light tracking-widest block mb-4">

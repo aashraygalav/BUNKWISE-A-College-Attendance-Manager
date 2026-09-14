@@ -29,14 +29,14 @@ export default function Hero({ onOpenDashboard }) {
       className="relative w-full h-[100dvh] flex flex-col justify-end overflow-hidden px-6 sm:px-12 md:px-20 pb-16 md:pb-24 pt-28"
     >
       {/* Full-bleed Background with Deep Tokyo Cyber / UPES Foothills Atmosphere */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <div
-          className="absolute inset-0 bg-cover bg-center animate-subtle-drift opacity-40 scale-105"
+          className="absolute inset-0 bg-cover bg-center animate-subtle-drift opacity-25 scale-105"
           style={{ backgroundImage: `url(${upesBg})` }}
         />
-        {/* Heavy Primary-to-Black Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-void via-void/80 to-transparent" />
-        <div className="absolute inset-0 bg-radial-gradient from-plasma/10 via-transparent to-void/90" />
+        {/* Soft Charcoal Vignette Overlay allowing dot field to breathe */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#08090C]/40 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-radial-gradient from-plasma/5 via-transparent to-transparent pointer-events-none" />
       </div>
 
       {/* Hero Content Pushed to Bottom-Left Third */}
@@ -83,7 +83,7 @@ export default function Hero({ onOpenDashboard }) {
           </button>
 
           <a
-            href="#features"
+            href="#dashboard-section"
             className="hover-lift px-6 py-4 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 font-sans text-xs font-medium text-ghost tracking-wider uppercase transition-colors"
           >
             Inspect The Engine

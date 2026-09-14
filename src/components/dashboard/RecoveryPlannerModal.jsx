@@ -74,7 +74,7 @@ export default function RecoveryPlannerModal({
               SoundFX.playTick();
               onClose();
             }}
-            className="p-2 rounded-full hover:bg-white/10 text-ghost/60 hover:text-ghost transition-colors"
+            className="btn-tactile p-2 rounded-full hover:bg-white/10 text-ghost/60 hover:text-ghost transition-colors"
           >
             <X size={20} />
           </button>
@@ -105,11 +105,11 @@ export default function RecoveryPlannerModal({
                     SoundFX.playTick();
                     setActiveSubjectId(sub.id);
                   }}
-                  className={`px-4 py-2.5 rounded-2xl font-sans text-xs whitespace-nowrap transition-all flex items-center gap-2 border ${
+                  className={`btn-tactile px-4 py-2.5 rounded-2xl font-sans text-xs whitespace-nowrap transition-all flex items-center gap-2 border ${
                     isSelected
                       ? isDanger
-                        ? 'bg-danger-crimson text-white border-danger-crimson shadow-[0_0_20px_rgba(255,59,48,0.4)]'
-                        : 'bg-plasma text-white border-plasma shadow-[0_0_20px_rgba(123,97,255,0.4)]'
+                        ? 'bg-danger-crimson text-white border-danger-crimson shadow-sm'
+                        : 'bg-plasma text-white border-plasma shadow-sm'
                       : isDanger
                       ? 'bg-danger-crimson/10 border-danger-crimson/30 text-danger-crimson hover:bg-danger-crimson/20'
                       : 'bg-white/5 border-white/5 text-ghost/70 hover:bg-white/10'
@@ -212,15 +212,14 @@ export default function RecoveryPlannerModal({
                     Every option below reaches at least <strong className="text-ghost">{targetPercent}%</strong>. Theory contributes 55 contact minutes per class; Lab contributes 115 (<span className="text-plasma-light font-mono font-semibold">2.09× Lab weight</span>).
                   </p>
                 </div>
-
-                {/* Valid Recovery Combination Cards */}
+                {/* Valid Recovery Combination Cards */}
                 <div className="space-y-3">
                   {displayCombinations.map((combo, idx) => (
                     <div
                       key={idx}
-                      className={`rounded-2xl p-4 sm:p-5 bg-void-subtle transition-all border ${
+                      className={`instrument-card rounded-2xl p-4 sm:p-5 transition-all border ${
                         combo.isFewestSessions
-                          ? 'border-lime/40 shadow-[0_0_25px_rgba(204,255,0,0.12)]'
+                          ? 'border-lime/40'
                           : 'border-white/10 hover:border-white/20'
                       }`}
                     >
@@ -233,7 +232,7 @@ export default function RecoveryPlannerModal({
                               {combo.theorySessions} Theory
                             </span>
                           ) : (
-                            <span className="px-3 py-1 rounded-xl bg-white/5 border border-white/5 font-mono text-xs text-ghost/40">
+                            <span className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 font-mono text-xs text-ghost/40">
                               0 Theory
                             </span>
                           )}
@@ -241,11 +240,11 @@ export default function RecoveryPlannerModal({
                           {stats.hasLab && (
                             combo.labSessions > 0 ? (
                               <span className="px-3 py-1 rounded-xl bg-plasma/15 border border-plasma/30 font-mono text-xs font-semibold text-plasma-light flex items-center gap-1.5">
-                                <Sparkles size={13} className="text-plasma-light" />
+                                <CalendarCheck size={13} className="text-plasma-light" />
                                 {combo.labSessions} {combo.labSessions === 1 ? 'Lab' : 'Labs'}
                               </span>
                             ) : (
-                              <span className="px-3 py-1 rounded-xl bg-white/5 border border-white/5 font-mono text-xs text-ghost/40">
+                              <span className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 font-mono text-xs text-ghost/40">
                                 0 Labs
                               </span>
                             )
@@ -254,8 +253,8 @@ export default function RecoveryPlannerModal({
 
                         <div className="flex items-center gap-2">
                           {combo.isFewestSessions && (
-                            <span className="px-2.5 py-0.5 rounded-full bg-lime/15 border border-lime/40 text-lime font-mono text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-[0_0_10px_rgba(204,255,0,0.2)]">
-                              <Award size={12} /> Fewest sessions
+                            <span className="px-2.5 py-0.5 rounded-lg bg-lime/10 border border-lime/30 text-lime font-mono text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1">
+                              <Award size={12} /> Min sessions
                             </span>
                           )}
                           <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 font-mono text-[11px] text-ghost/70">
@@ -303,7 +302,7 @@ export default function RecoveryPlannerModal({
                       SoundFX.playTick();
                       setShowAllCombinations(!showAllCombinations);
                     }}
-                    className="w-full py-2.5 px-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-ghost/70 hover:text-ghost font-sans text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+                    className="btn-tactile w-full py-2.5 px-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-ghost/70 hover:text-ghost font-sans text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
                   >
                     {showAllCombinations ? (
                       <>
@@ -342,7 +341,7 @@ export default function RecoveryPlannerModal({
               SoundFX.playTick();
               onClose();
             }}
-            className="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 font-sans text-xs font-semibold text-ghost transition-colors"
+            className="btn-tactile px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 font-sans text-xs font-semibold text-ghost transition-colors"
           >
             Done
           </button>

@@ -30,16 +30,16 @@ export default function Philosophy() {
     <section
       id="philosophy"
       ref={sectionRef}
-      className="relative w-full py-32 md:py-48 px-6 sm:px-12 md:px-20 bg-void-subtle overflow-hidden border-y border-white/5"
+      className="relative w-full py-32 md:py-48 px-6 sm:px-12 md:px-20 bg-void-subtle/50 overflow-hidden border-y border-white/5"
     >
       {/* Parallaxing Dark Bio-Cyber Texture Background */}
       <div
-        className="absolute inset-0 opacity-15 bg-cover bg-center pointer-events-none"
+        className="absolute inset-0 opacity-10 bg-cover bg-center pointer-events-none"
         style={{
           backgroundImage: `url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1920&q=80')`
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-void via-transparent to-void" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#08090C] via-transparent to-[#08090C] pointer-events-none" />
 
       <div className="relative z-10 max-w-5xl mx-auto flex flex-col gap-12 text-left">
         {/* Monospace section marker */}

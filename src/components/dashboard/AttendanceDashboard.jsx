@@ -184,15 +184,18 @@ export default function AttendanceDashboard({
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-8 py-10">
+    <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-10">
+      {/* Cockpit Instrument Faceplate Hairline Grid Overlay */}
+      <div className="absolute inset-0 pointer-events-none instrument-grid opacity-15" />
+
       {/* Header Controls Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-8 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-plasma to-lime flex items-center justify-center shadow-[0_0_20px_rgba(123,97,255,0.4)]">
-            <Clock size={20} className="text-void" />
+          <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-ghost/80 shadow-sm">
+            <Clock size={18} className="text-ghost/90" />
           </div>
           <div>
-            <h1 className="font-sans font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
+            <h1 className="font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
               Attendance Cockpit
             </h1>
             <p className="font-mono text-xs text-ghost/50">
@@ -202,17 +205,17 @@ export default function AttendanceDashboard({
         </div>
 
         {/* Action Button Row */}
-        <div className="flex items-center flex-wrap gap-2.5">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full scrollbar-none">
           <button
             onClick={() => {
               SoundFX.playTick();
               setSimulatorSubjectId(subjects[0]?.id);
               setIsSimulatorOpen(true);
             }}
-            className="px-4 py-2 rounded-full bg-plasma/20 hover:bg-plasma/30 border border-plasma/40 text-plasma-light font-sans text-xs font-semibold flex items-center gap-2 hover-lift"
+            className="btn-tactile px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-ghost/80 hover:text-white font-sans text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
             title="Simulate future attendance and what-if scenarios"
           >
-            <Sliders size={14} className="text-plasma-light" />
+            <Sliders size={13} className="text-ghost/60" />
             <span>Simulator</span>
           </button>
 
@@ -223,10 +226,10 @@ export default function AttendanceDashboard({
               setRecoverySubjectId(null);
               setIsRecoveryOpen(true);
             }}
-            className="px-4 py-2 rounded-full bg-danger-crimson/15 hover:bg-danger-crimson/25 border border-danger-crimson/30 text-danger-crimson font-sans text-xs font-semibold flex items-center gap-2 hover-lift"
+            className="btn-tactile px-3.5 py-2 rounded-xl bg-danger-crimson/15 hover:bg-danger-crimson/25 border border-danger-crimson/30 text-danger-crimson font-sans text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap"
             title="Shortage recovery roadmap"
           >
-            <ShieldAlert size={14} className="text-danger-crimson" />
+            <ShieldAlert size={13} className="text-danger-crimson" />
             <span>Recovery</span>
           </button>
 
@@ -235,9 +238,9 @@ export default function AttendanceDashboard({
               SoundFX.playTap();
               setIsTodaysLogOpen(true);
             }}
-            className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-sans text-xs font-semibold flex items-center gap-2 hover-lift"
+            className="btn-tactile px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-ghost/80 hover:text-white font-sans text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
           >
-            <CalendarCheck size={14} className="text-lime" />
+            <CalendarCheck size={13} className="text-ghost/60" />
             <span>Today's Log</span>
           </button>
 
@@ -246,10 +249,10 @@ export default function AttendanceDashboard({
               SoundFX.playTap();
               setIsSettingsOpen(true);
             }}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-ghost/70 hover:text-white hover-lift"
+            className="btn-tactile p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-ghost/60 hover:text-white flex items-center justify-center"
             title="Settings"
           >
-            <Settings size={16} />
+            <Settings size={15} />
           </button>
 
           <button
@@ -258,162 +261,166 @@ export default function AttendanceDashboard({
               setSubjectToEdit(null);
               setIsAddEditOpen(true);
             }}
-            className="btn-magnetic px-5 py-2 rounded-full bg-plasma text-white font-sans text-xs font-bold shadow-[0_0_25px_rgba(123,97,255,0.5)] flex items-center gap-1.5"
+            className="btn-tactile px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-sans text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap shadow-sm"
           >
-            <span className="btn-sliding-bg bg-lime"></span>
-            <span className="btn-content text-white flex items-center gap-1.5">
-              <Plus size={15} />
-              <span>Add Subject</span>
-            </span>
+            <Plus size={14} />
+            <span>Add Subject</span>
           </button>
 
           {isModalView && onClose && (
             <button
               onClick={onClose}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white ml-2"
+              className="btn-tactile p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white ml-1 flex-shrink-0"
               title="Close Dashboard"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           )}
         </div>
       </div>
 
-      {/* OVERVIEW STATS HERO CARDS */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
-        {/* Main Overall Percentage Card */}
-        <div className="lg:col-span-5 glass-panel rounded-[2.5rem] p-8 flex items-center justify-between relative overflow-hidden border border-white/10">
-          <div className="z-10">
-            <span className="font-mono text-xs text-ghost/50 tracking-wider uppercase">
-              OVERALL LEARNING HOURS
-            </span>
-            <div className="flex items-baseline gap-3 my-2">
-              <span className="font-mono text-5xl font-extrabold text-white tracking-tight">
-                {overallStats.currentRate}%
+      {/* REFINED OVERVIEW TELEMETRY HUD */}
+      <div className="instrument-card rounded-[2rem] p-5 sm:p-6 mb-8 border border-white/10 relative overflow-hidden">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
+          {/* Main Overall Percentage & Dial Block */}
+          <div className="flex items-center gap-5">
+            {/* Large Progress Dial */}
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={dialRadius}
+                  className="stroke-white/5"
+                  strokeWidth="8"
+                  fill="none"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={dialRadius}
+                  stroke={getDialColor()}
+                  strokeWidth="8"
+                  strokeDasharray={dialCircumference}
+                  strokeDashoffset={dialOffset}
+                  strokeLinecap="round"
+                  fill="none"
+                  className="transition-all duration-700 ease-out"
+                />
+              </svg>
+              <span className="absolute font-mono text-sm sm:text-base font-extrabold text-white">
+                {Math.round(overallStats.rateNumber)}%
               </span>
-              <span
-                className={`text-xs font-mono font-bold px-2.5 py-1 rounded-full border ${
-                  overallStats.rateNumber >= 75
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                    : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-                }`}
-              >
-                {overallStats.rateNumber >= 75 ? 'Safe Criteria (≥75%)' : 'Below Criteria (<75%)'}
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-[10px] text-ghost/50 tracking-wider uppercase">
+                  OVERALL LEARNING HOURS
+                </span>
+                <span
+                  className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                    overallStats.rateNumber >= 75
+                      ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                      : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                  }`}
+                >
+                  {overallStats.rateNumber >= 75 ? 'Safe Criteria (≥75%)' : 'Below Criteria (<75%)'}
+                </span>
+              </div>
+              <div className="flex items-baseline gap-3 my-1">
+                <span className="font-mono text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                  {overallStats.currentRate}%
+                </span>
+                <span className="font-mono text-xs text-ghost/50">
+                  Target: <strong className="text-white">{settings.defaultTarget || 75}%</strong>
+                </span>
+              </div>
+              <p className="font-sans text-xs text-ghost/50 font-light max-w-sm">
+                Calculated on contact hours with <span className="text-plasma-light font-mono font-medium">2.09× Lab weight</span> (115m vs 55m).
+              </p>
+            </div>
+          </div>
+
+          {/* 4 Telemetry Cells */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 lg:w-auto flex-1 lg:max-w-2xl border-t lg:border-t-0 lg:border-l border-white/5 pt-4 lg:pt-0 lg:pl-6">
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col justify-between">
+              <span className="font-mono text-[9px] text-emerald-400 uppercase tracking-wider font-semibold">
+                Attended
+              </span>
+              <div className="font-mono text-lg sm:text-xl font-extrabold text-white my-0.5">
+                {overallStats.attendedHours}<span className="text-[10px] font-normal text-ghost/50 ml-0.5">h</span>
+              </div>
+              <span className="font-mono text-[10px] text-ghost/40">
+                {overallStats.totalClassesAttended} sessions
               </span>
             </div>
-            <p className="font-sans text-xs text-ghost/60 max-w-xs font-light">
-              Overall contact hours calculation with 2.09× Lab weight (115m Lab vs 55m Theory).
-            </p>
-          </div>
 
-          {/* Large Overall Progress Dial */}
-          <div className="relative w-28 h-28 flex-shrink-0 flex items-center justify-center">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r={dialRadius}
-                className="stroke-void-surface"
-                strokeWidth="8"
-                fill="none"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r={dialRadius}
-                stroke={getDialColor()}
-                strokeWidth="8"
-                strokeDasharray={dialCircumference}
-                strokeDashoffset={dialOffset}
-                strokeLinecap="round"
-                fill="none"
-                className="transition-all duration-1000 ease-out"
-              />
-            </svg>
-            <span className="absolute font-mono text-sm font-bold text-white">
-              {Math.round(overallStats.rateNumber)}%
-            </span>
-          </div>
-        </div>
-
-        {/* 4 Mini Stat Blocks */}
-        <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="glass-panel rounded-2xl p-5 flex flex-col justify-between border border-white/5">
-            <span className="font-mono text-[10px] text-emerald-400 uppercase tracking-wider">
-              Attended
-            </span>
-            <div className="font-mono text-2xl font-extrabold text-white my-1">
-              {overallStats.attendedHours} <span className="text-xs font-normal text-ghost/50">hrs</span>
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col justify-between">
+              <span className="font-mono text-[9px] text-rose-400 uppercase tracking-wider font-semibold">
+                Missed
+              </span>
+              <div className="font-mono text-lg sm:text-xl font-extrabold text-white my-0.5">
+                {overallStats.missedHours}<span className="text-[10px] font-normal text-ghost/50 ml-0.5">h</span>
+              </div>
+              <span className="font-mono text-[10px] text-ghost/40">
+                {overallStats.totalClassesMissed} bungs
+              </span>
             </div>
-            <span className="font-sans text-[11px] text-ghost/40">
-              {overallStats.totalClassesAttended} sessions
-            </span>
-          </div>
 
-          <div className="glass-panel rounded-2xl p-5 flex flex-col justify-between border border-white/5">
-            <span className="font-mono text-[10px] text-rose-400 uppercase tracking-wider">
-              Missed
-            </span>
-            <div className="font-mono text-2xl font-extrabold text-white my-1">
-              {overallStats.missedHours} <span className="text-xs font-normal text-ghost/50">hrs</span>
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col justify-between">
+              <span className="font-mono text-[9px] text-cyan-400 uppercase tracking-wider font-semibold">
+                Conducted
+              </span>
+              <div className="font-mono text-lg sm:text-xl font-extrabold text-white my-0.5">
+                {overallStats.conductedHours}<span className="text-[10px] font-normal text-ghost/50 ml-0.5">h</span>
+              </div>
+              <span className="font-mono text-[10px] text-ghost/40">
+                {overallStats.conductedClasses} held
+              </span>
             </div>
-            <span className="font-sans text-[11px] text-ghost/40">
-              {overallStats.totalClassesMissed} bungs
-            </span>
-          </div>
 
-          <div className="glass-panel rounded-2xl p-5 flex flex-col justify-between border border-white/5">
-            <span className="font-mono text-[10px] text-cyan-400 uppercase tracking-wider">
-              Conducted
-            </span>
-            <div className="font-mono text-2xl font-extrabold text-white my-1">
-              {overallStats.conductedHours} <span className="text-xs font-normal text-ghost/50">hrs</span>
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex flex-col justify-between">
+              <span className="font-mono text-[9px] text-plasma-light uppercase tracking-wider font-semibold">
+                Semester
+              </span>
+              <div className="font-mono text-lg sm:text-xl font-extrabold text-white my-0.5">
+                {overallStats.totalSemHours}<span className="text-[10px] font-normal text-ghost/50 ml-0.5">h</span>
+              </div>
+              <span className="font-mono text-[10px] text-ghost/40">
+                {overallStats.totalClassesPlanned} planned
+              </span>
             </div>
-            <span className="font-sans text-[11px] text-ghost/40">
-              {overallStats.conductedClasses} held
-            </span>
-          </div>
-
-          <div className="glass-panel rounded-2xl p-5 flex flex-col justify-between border border-white/5">
-            <span className="font-mono text-[10px] text-plasma-light uppercase tracking-wider">
-              Semester
-            </span>
-            <div className="font-mono text-2xl font-extrabold text-white my-1">
-              {overallStats.totalSemHours} <span className="text-xs font-normal text-ghost/50">hrs</span>
-            </div>
-            <span className="font-sans text-[11px] text-ghost/40">
-              {overallStats.totalClassesPlanned} planned
-            </span>
           </div>
         </div>
       </div>
 
       {/* TACTICAL DECISION COPILOT BANNER */}
       {tacticalRecommendations.length > 0 && (
-        <div className="mb-8 rounded-[2.5rem] p-6 glass-panel border border-white/10 relative overflow-hidden bg-gradient-to-r from-void to-void-subtle shadow-xl">
+        <div className="mb-8 rounded-2xl p-5 instrument-card border border-white/10 relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
               <div
-                className={`p-3 rounded-2xl border flex-shrink-0 ${
+                className={`p-2.5 rounded-xl border flex-shrink-0 ${
                   tacticalRecommendations[0].status === 'danger'
-                    ? 'bg-danger-crimson/20 border-danger-crimson/40 text-danger-crimson animate-pulse'
+                    ? 'bg-danger-crimson/15 border-danger-crimson/30 text-danger-crimson'
                     : tacticalRecommendations[0].status === 'warning'
-                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
-                    : 'bg-lime/20 border-lime/40 text-lime'
+                    ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+                    : 'bg-lime/15 border-lime/30 text-lime'
                 }`}
               >
                 {tacticalRecommendations[0].status === 'danger' ? (
-                  <ShieldAlert size={24} />
+                  <ShieldAlert size={22} />
                 ) : tacticalRecommendations[0].status === 'warning' ? (
-                  <AlertTriangle size={24} />
+                  <AlertTriangle size={22} />
                 ) : (
-                  <CheckCircle2 size={24} />
+                  <CheckCircle2 size={22} />
                 )}
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/10 text-ghost/70 font-bold">
-                    TACTICAL DECISION PROTOCOL
+                  <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/10 text-ghost/60 font-semibold">
+                    TACTICAL DIRECTIVE
                   </span>
                   <span
                     className={`font-mono text-xs font-bold ${
@@ -427,7 +434,7 @@ export default function AttendanceDashboard({
                     {tacticalRecommendations[0].tacticalHeadline}
                   </span>
                 </div>
-                <h4 className="font-sans font-bold text-base text-ghost mb-1">
+                <h4 className="font-sans font-bold text-base text-ghost mb-0.5">
                   {tacticalRecommendations[0].name}: {tacticalRecommendations[0].actionDirective}
                 </h4>
                 <p className="font-sans text-xs text-ghost/50">
@@ -449,7 +456,7 @@ export default function AttendanceDashboard({
                     setRecoverySubjectId(tacticalRecommendations[0].id);
                     setIsRecoveryOpen(true);
                   }}
-                  className="px-5 py-2.5 rounded-full bg-danger-crimson text-white font-sans text-xs font-bold shadow-[0_0_20px_rgba(255,59,48,0.4)] flex items-center gap-1.5 hover-lift"
+                  className="btn-tactile px-4 py-2 rounded-xl bg-danger-crimson hover:bg-danger-crimson/90 text-white font-sans text-xs font-semibold flex items-center gap-1.5 shadow-sm"
                 >
                   <ShieldAlert size={14} />
                   <span>View Recovery Steps</span>
@@ -461,7 +468,7 @@ export default function AttendanceDashboard({
                     setSimulatorSubjectId(tacticalRecommendations[0].id);
                     setIsSimulatorOpen(true);
                   }}
-                  className="px-5 py-2.5 rounded-full bg-plasma text-white font-sans text-xs font-bold shadow-[0_0_20px_rgba(123,97,255,0.4)] flex items-center gap-1.5 hover-lift"
+                  className="btn-tactile px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-sans text-xs font-semibold flex items-center gap-1.5 shadow-sm"
                 >
                   <Sliders size={14} />
                   <span>Test In Simulator</span>
@@ -475,7 +482,7 @@ export default function AttendanceDashboard({
       {/* FILTER, SEARCH & SORT CONTROLS */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white/5 border border-white/5">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/5">
           {[
             { id: 'all', label: `All (${subjects.length})` },
             { id: 'safe', label: 'Safe to Bunk' },
@@ -488,10 +495,10 @@ export default function AttendanceDashboard({
                 SoundFX.playTap();
                 setFilter(tab.id);
               }}
-              className={`px-4 py-2 rounded-xl font-sans text-xs font-semibold transition-all ${
+              className={`btn-tactile px-3.5 py-1.5 rounded-lg font-sans text-xs font-medium transition-all ${
                 filter === tab.id
-                  ? 'bg-plasma text-white shadow-[0_0_15px_rgba(123,97,255,0.4)]'
-                  : 'text-ghost/60 hover:text-white'
+                  ? 'bg-white/10 text-white border border-white/10'
+                  : 'text-ghost/60 hover:text-white border border-transparent'
               }`}
             >
               {tab.label}

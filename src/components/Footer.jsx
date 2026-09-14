@@ -42,11 +42,8 @@ export default function Footer({ onOpenDashboard }) {
             <a href="#hero" className="text-ghost/70 hover:text-white transition-colors hover-lift">
               Opening Shot
             </a>
-            <a href="#features" className="text-ghost/70 hover:text-white transition-colors hover-lift">
-              Functional Artifacts
-            </a>
-            <a href="#protocol" className="text-ghost/70 hover:text-white transition-colors hover-lift">
-              Protocol Archive
+            <a href="#dashboard-section" className="text-ghost/70 hover:text-white transition-colors hover-lift">
+              Attendance Cockpit
             </a>
             <a href="#philosophy" className="text-ghost/70 hover:text-white transition-colors hover-lift">
               The Manifesto
