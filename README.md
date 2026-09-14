@@ -1,153 +1,399 @@
-# BunkWise — Smart Attendance & Bunk Planner 🎓⚡
+<div align="center">
 
-A modern, student-focused attendance and learning-hours management web application built to track the **75% college attendance criteria** based on **Contact Learning Minutes**.
+```
+██████╗ ██╗   ██╗███╗   ██╗██╗  ██╗██╗    ██╗██╗███████╗███████╗
+██╔══██╗██║   ██║████╗  ██║██║ ██╔╝██║    ██║██║██╔════╝██╔════╝
+██████╔╝██║   ██║██╔██╗ ██║█████╔╝ ██║ █╗ ██║██║███████╗█████╗  
+██╔══██╗██║   ██║██║╚██╗██║██╔═██╗ ██║███╗██║██║╚════██║██╔══╝  
+██████╔╝╚██████╔╝██║ ╚████║██║  ██╗╚███╔███╔╝██║███████║███████╗
+╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝╚══════╝╚══════╝
+```
 
-BunkWise helps college students understand their attendance standing, accounts for the heavy impact of laboratory sessions versus theory classes, and calculates precisely how many classes they can safely skip—or how many consecutive sessions they must attend to recover.
+### The Deterministic Attendance & Tactical Bunk Recovery Engine
+
+*Engineered for university students facing strict 75% attendance criteria.*  
+*Models the non-linear 2.09× penalty of 115-minute laboratory sessions and solves linear mixed-recovery combinations.*
+
+<br/>
+
+[![React 19](https://img.shields.io/badge/React-19.0.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Vite 6](https://img.shields.io/badge/Vite-6.2.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![GSAP 3](https://img.shields.io/badge/GSAP-3.12-88CE02?style=for-the-badge&logo=greensock&logoColor=white)](https://greensock.com/gsap/)
+[![Automated Tests](https://img.shields.io/badge/Tests-122%20Passing-10B981?style=for-the-badge&logo=vitest&logoColor=white)](#-automated-verification-suite-122-tests)
+[![Local-First](https://img.shields.io/badge/Privacy-100%25%20Local--First-8B5CF6?style=for-the-badge&logo=safari&logoColor=white)](#-local-first--zero-telemetry-architecture)
+[![License](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)](LICENSE)
+
+<br/>
+
+[**Live Application**](https://aashraygalav.github.io/BUNKWISE-A-College-Attendance-Manager/) • [**Mathematical Formulation**](#-the-mathematics-of-attendance) • [**Mixed Recovery Solver**](#-mixed-mode-recovery-planner-algorithm) • [**Canvas Physics Field**](#-ambient-dot-field-canvas-physics) • [**Quickstart**](#-quickstart)
+
+</div>
 
 ---
 
-## ⚡ Core Concept: The Learning Hours Model
+## ⚡ The Problem: Why Naive Attendance Trackers Fail
 
-In modern university curricula, classes carry different contact durations and academic weight:
-- **Theory Class**: **55 minutes** (0.92 hrs)
-- **Lab Session**: **115 minutes** (1.92 hrs)
-- **Standard Weekly Format**: **1 Lab + 3 Theory classes per week** (e.g., 14 weeks $\implies$ 14 Labs + 42 Theory classes).
+Every generic attendance tracker on the internet makes a fatal assumption:
 
-### ⚖️ The 2.09× Lab Weight Ratio
-$$\frac{115\text{ minutes}}{55\text{ minutes}} \approx 2.0909$$
+$$\text{Attendance Rate} = \frac{\text{Classes Attended}}{\text{Classes Conducted}}$$
 
-Because a single lab session spans **115 minutes**, missing one lab inflicts more than **double the attendance loss** of missing a theory class. Conversely, attending a lab recovers attendance twice as fast. Simple class-count formulas fail on courses with labs—BunkWise calculates attendance strictly using **total contact learning minutes**.
+In modern university STEM curricula, this formula is **academically catastrophic**. Classes do not carry equal weight:
+
+| Session Type | Duration | Contact Weight | Impact Ratio |
+| :--- | :---: | :---: | :---: |
+| **Theory Lecture** | **55 minutes** | $0.917\text{ hours}$ | $1.00\times$ |
+| **Laboratory Session** | **115 minutes** | $1.917\text{ hours}$ | **$\mathbf{2.0909\times}$** |
+
+$$\text{Weight Ratio} = \frac{115\text{ min}}{55\text{ min}} \approx 2.0909\times$$
+
+> **The 2.09× Asymmetry**: Missing a single 115-minute lab inflicts **more attendance damage than missing two consecutive theory lectures**. Conversely, attending a lab recovers attendance more than twice as fast. 
+> 
+> Naive attendance apps count "1 class = 1 class", giving students a false sense of security right before they get debarred. **BunkWise computes attendance strictly using contact learning minutes.**
 
 ---
 
-## 📐 Mathematical Methodology
+## 🖥️ Tactical Cockpit Blueprint
 
-### 1. Attended & Conducted Learning Minutes
-$$\text{AttendedMinutes} = (A_{\text{theory}} \times 55) + (A_{\text{lab}} \times 115)$$
-$$\text{MissedMinutes} = (M_{\text{theory}} \times 55) + (M_{\text{lab}} \times 115)$$
-$$\text{ConductedMinutes} = \text{AttendedMinutes} + \text{MissedMinutes}$$
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│ BUNKWISE COCKPIT HUD v2.0                                [STATUS: TACTICAL SAFE] │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│ AGGREGATE HEALTH: 84.6%     TOTAL HOURS: 142.5h / 168.0h     BUFFER: +18.2 HOURS │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  [ADVANCED COMPILER DESIGN] ──── CS402 ──── THEORY (55m) + LAB (115m)            │
+│  ┌─────────────────────────┬───────────────────────────────────────────────────┐ │
+│  │ CURRENT: 68.4% (DEFICIT)│ [FLIP CARD: 3D TACTICAL RECOVERY MATRIX]          │ │
+│  │ 42 Conducted / 28 Att   │                                                   │ │
+│  │ Deficit: -165 min       │ ⚡ FEWEST SESSIONS : 1 Theory + 3 Labs (4 total)   │ │
+│  │ Safe Skips Today: 0     │ 🔬 PURE LAB PATH   : 0 Theory + 4 Labs (4 total)   │ │
+│  │ Sem Max Allowance: 4    │ 📚 PURE THEORY     : 8 Theory + 0 Labs (8 total)   │ │
+│  │ Trend: +1.4% (Attended) │ ⚖️ BALANCED COMBO  : 3 Theory + 2 Labs (5 total)   │ │
+│  └─────────────────────────┴───────────────────────────────────────────────────┘ │
+│                                                                                  │
+│  HUD GAUGES: [Circular SVG Dials]  •  [Kinetic Particle Ambient Field @ 60 FPS]  │
+│  AUDIO HAPTICS: Synthesized 800Hz / 440Hz / 220Hz harmonic feedback on action   │
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
 
-### 2. Contact Hours Attendance Percentage
-$$\text{Attendance\%} = \begin{cases} 100.0\% & \text{if ConductedMinutes} = 0 \\ \left(\frac{\text{AttendedMinutes}}{\text{ConductedMinutes}}\right) \times 100\% & \text{if ConductedMinutes} > 0 \end{cases}$$
+---
 
-### 3. Safe Bunk Buffer (When Attendance $\ge 75\%$)
-BunkWise determines the exact minute buffer $B$ before dropping below target ratio ($T = 0.75$):
+## 📐 The Mathematics of Attendance
+
+### 1. Contact Minute Calculus
+For any course with attended theory sessions $A_T$, missed theory sessions $M_T$, attended lab sessions $A_L$, and missed lab sessions $M_L$:
+
+$$\text{AttendedMinutes} = 55 \cdot A_T + 115 \cdot A_L$$
+
+$$\text{ConductedMinutes} = 55 \cdot (A_T + M_T) + 115 \cdot (A_L + M_L)$$
+
+$$\text{Attendance \%} = \begin{cases} 
+100.0\% & \text{if } \text{ConductedMinutes} = 0 \\ 
+\left(\dfrac{\text{AttendedMinutes}}{\text{ConductedMinutes}}\right) \times 100 & \text{if } \text{ConductedMinutes} > 0 
+\end{cases}$$
+
+---
+
+### 2. Safe Bunk Horizon Buffer (When Attendance $\ge 75\%$)
+The system calculates the exact minute surplus $B$ before the student crosses below the mandatory 75% threshold ($\theta = 0.75$):
+
 $$B = \left\lfloor \frac{\text{AttendedMinutes}}{0.75} - \text{ConductedMinutes} \right\rfloor$$
-- **Safe Next Theory Skips (55m each):** $\min\left(\text{Remaining}_{\text{theory}},\, \lfloor B / 55 \rfloor\right)$
-- **Safe Next Lab Skips (115m each):** $\min\left(\text{Remaining}_{\text{lab}},\, \lfloor B / 115 \rfloor\right)$
-- **Total Semester Bunk Allowance:** $\lfloor (\text{MaxMissedMinutes}_{\text{sem}} - \text{MissedMinutes}) / 55 \rfloor$
 
-### 4. Catch-Up & Recovery Requirement (When Attendance $< 75\%$)
-To recover to $75\%$ attendance, the required consecutive minutes $Y$ are:
-$$\frac{\text{AttendedMinutes} + Y}{\text{ConductedMinutes} + Y} \ge 0.75 \implies Y = \lceil 3 \times \text{ConductedMinutes} - 4 \times \text{AttendedMinutes} \rceil$$
-- **Consecutive Theory Classes Needed:** $\lceil Y / 55 \rceil$
-- **Consecutive Lab Sessions Needed:** $\lceil Y / 115 \rceil$
-- **Shortage Alert:** If $Y > \text{RemainingMinutes}$, BunkWise alerts the student that the 75% target is mathematically unreachable and displays their maximum achievable percentage.
+From the surplus buffer $B$, BunkWise provides dual deterministic skip allowances:
+
+$$\text{SafeTheorySkips} = \min\left(\text{Remaining}_T,\, \left\lfloor \frac{B}{55} \right\rfloor\right)$$
+
+$$\text{SafeLabSkips} = \min\left(\text{Remaining}_L,\, \left\lfloor \frac{B}{115} \right\rfloor\right)$$
 
 ---
 
-## ✨ Application Features
+### 3. Shortage Deficit Formulation (When Attendance $< 75\%$)
+To recover from an attendance deficit to $\ge 75\%$, the required additional attended contact minutes $Y$ must satisfy:
 
-- **Theory & Lab Tracking**: Independent counters and inputs for 55m theory classes and 115m lab sessions.
-- **Total Learning Hours**: Real-time display of attended hours, missed hours, conducted hours, and semester planned hours.
-- **Dual Safe-to-Bunk Guidance**: Instant advice on how many Theory classes **OR** Lab sessions can be safely skipped right now.
-- **Interactive Daily Logging**:
-  - `+ Attended` and `+ Missed` buttons for theory and lab.
-  - One-click `Undo` button to revert accidental taps.
-  - `Today's Log` modal for fast multi-subject logging in a single popup.
-- **Search, Filters & Sorting**:
-  - Filter by `All`, `Safe to Bunk (≥75%)`, `Need Attendance (<75%)`, or `Has Labs`.
-  - Sort by `Needs Attention First`, `Lowest %`, `Highest %`, or `Alphabetical`.
-  - Instant search across subject names and course codes.
-- **Glassmorphism Aesthetic & Dynamic Background**:
-  - Translucent frosted cards, responsive SVG dials, and accessible status colors.
-  - UPES Bidholi Campus backdrop with subtle motion.
-  - Lando Norris-inspired kinetic canvas particles and cursor tracking.
-  - Audio feedback via Web Audio API (toggleable in header).
-- **Privacy-First & Local Storage**:
-  - All data is stored directly in browser `localStorage`. No accounts, no servers, no ads, no trackers.
-  - Full JSON backup export and import for transferring data between devices.
+$$\frac{\text{AttendedMinutes} + Y}{\text{ConductedMinutes} + Y} \ge 0.75 \implies Y = \max\left(0,\, \left\lceil 3 \cdot \text{ConductedMinutes} - 4 \cdot \text{AttendedMinutes} \right\rceil\right)$$
 
 ---
 
-## 🔒 Privacy & Data Storage
+## 🧠 Mixed-Mode Recovery Planner Algorithm
 
-BunkWise runs **100% on your device**:
-- No attendance records or schedules are transmitted across the network.
-- Your data stays inside your browser's `localStorage` (`bunkwise_attendance_v3`).
-- Clearing browser cache or site data will reset your tracker; use the **Export Data** feature in Settings to keep backups.
+When a student falls below 75%, naive apps suggest a single number like *"Attend 7 classes"*. But what if the semester has 3 labs and 4 theory classes left? What is the most time-efficient path?
 
----
+BunkWise runs an exhaustive **Integer Linear Programming (ILP) Solver** over the Diophantine inequality:
 
-## 📁 Project Structure
+$$\text{Find all } (t, l) \in \mathbb{N}_0 \times \mathbb{N}_0 \quad \text{such that} \quad 55t + 115l \ge Y$$
 
-```
-.
-├── index.html          # Semantic HTML5 layout and modal dialogs
-├── style.css           # Glassmorphic design system and responsive styles
-├── app.js              # Calculation engine, state store, and UI controller
-├── favicon.svg         # Application icon
-├── upes_bidholi_bg.jpg # Campus background visual asset
-├── server.js           # Lightweight local development server (Node.js built-in)
-├── package.json        # Project metadata and start script
-└── README.md           # Documentation and mathematical specification
+$$\text{Subject to:} \quad 0 \le t \le \text{Remaining}_T, \quad 0 \le l \le \text{Remaining}_L$$
+
+```mermaid
+flowchart TD
+    A[Student Drops Below 75%] --> B[Compute Deficit Y = 3*Cond - 4*Att]
+    B --> C{Y > Max Feasible Minutes?}
+    C -- Yes --> D[CRITICAL ALERT: Mathematically Unrecoverable<br/>Calculate Maximum Achievable Rate %]
+    C -- No --> E[Linear Diophantine Enumeration Loop]
+    E --> F[Generate Valid Tuples: t Theory, l Labs]
+    F --> G[Evaluate Post-Recovery Safe-Bunk Buffers]
+    G --> H[Sort by Fewest Total Sessions: min t + l]
+    H --> I[Tag Pareto-Optimal Options]
+    I --> J1[⚡ Fewest Sessions Combo]
+    I --> J2[🔬 Pure Lab Recovery]
+    I --> J3[📚 Pure Theory Recovery]
+    I --> J4[⚖️ Balanced Trade-off]
+    J1 & J2 & J3 & J4 --> K[Render Interactive 3D Flip Matrix]
 ```
 
+### Pareto Optimization & Categorization
+Every generated combination $(t, l)$ is evaluated for:
+1. **Total Session Footprint**: $S = t + l$
+2. **Buffer Efficiency**: Post-recovery minute surplus $B_{\text{post}} = \lfloor \frac{\text{Attended} + 55t + 115l}{0.75} - (\text{Conducted} + 55t + 115l) \rfloor$
+3. **Smart Badging**:
+   - `Fewest Sessions`: $\min(t + l)$ (fastest physical calendar recovery)
+   - `Pure Lab`: $t = 0$ (minimal days on campus)
+   - `Pure Theory`: $l = 0$ (zero lab requirements)
+   - `Balanced`: Optimal trade-off between theory and lab
+
+### Unreachability Detection
+If $Y > 55 \cdot \text{Remaining}_T + 115 \cdot \text{Remaining}_L$, BunkWise flags the course as **MATHEMATICALLY UNRECOVERABLE** and displays the exact upper bound:
+
+$$\text{MaxAchievable\%} = \left(\frac{\text{Attended} + 55 \cdot \text{Remaining}_T + 115 \cdot \text{Remaining}_L}{\text{Conducted} + 55 \cdot \text{Remaining}_T + 115 \cdot \text{Remaining}_L}\right) \times 100\%$$
+
 ---
 
-## 🚀 Local Development Setup
+## 🌌 Ambient Dot Field: Canvas Physics
 
-BunkWise has **zero third-party dependencies**. You can run it with any static file server:
+BunkWise features a custom-engineered HTML5 canvas particle environment running a real-time kinetic physics simulation.
 
-### Option 1: Using the Included Node.js Server
+```
+       [Mouse Cursor]
+             *
+          .-' | '-.       Repulsion Field (Radius R = 280px)
+        .'    |    '.     Inverse-Square Falloff: F ∝ 1 / (1 + (d/R)²)
+       /      |      \
+      ;       v       ;
+     :     (Particle)  :
+      \       |       /   Velocity Damping: v(t+1) = v(t) * 0.94
+       '.     v     .'    Spring Restoration: F_spring = -k * (x - x_anchor)
+         '-.  |  .-'
+             'v'
+```
+
+### Simulation Specifications:
+- **Particle Budget**: 280–420 high-DPI particles on desktop, dynamically scaled to viewport area.
+- **Color Palette**: Off-white dots (`rgba(255, 255, 255, 0.40)`) rendered over a deep charcoal substrate (`#0d0e12`).
+- **Interaction Radius**: $280\text{px}$ repulsion envelope with smooth quadratic attenuation.
+- **Kinetic Restoration**: Damped harmonic oscillator returning each particle to its origin coordinate ($k = 0.035$, friction $\mu = 0.94$).
+- **Zero-Waste Battery Lifecycle**: Incorporates idle sleep detection. If the cursor is stationary for $>2.5\text{ seconds}$, the `requestAnimationFrame` loop suspends execution until the next pointer event, reducing idle GPU consumption to **0%**.
+
+---
+
+## 🔊 Procedural Web Audio Synthesis
+
+Zero external audio assets (`.mp3` or `.wav`). Every auditory feedback cue is synthesized in real time using the browser's native `AudioContext`:
+
+```javascript
+// Example: Synthesizing a crisp tactile haptic pulse (800Hz -> 200Hz)
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const osc = ctx.createOscillator();
+const gain = ctx.createGain();
+
+osc.type = 'sine';
+osc.frequency.setValueAtTime(800, ctx.currentTime);
+osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.04);
+
+gain.gain.setValueAtTime(0.08, ctx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+
+osc.connect(gain);
+gain.connect(ctx.destination);
+osc.start();
+osc.stop(ctx.currentTime + 0.04);
+```
+
+| Event | Waveform | Frequency Modulation | Duration | Semantic Purpose |
+| :--- | :---: | :---: | :---: | :--- |
+| **Tactile Tap** | Sine | $800\text{Hz} \to 200\text{Hz}$ | $40\text{ms}$ | Attendance log increment |
+| **Undo / Revert** | Triangle | $350\text{Hz} \to 180\text{Hz}$ | $60\text{ms}$ | Operation reversal |
+| **Card 3D Flip** | Sine | $440\text{Hz} \to 660\text{Hz}$ | $80\text{ms}$ | Recovery matrix inspection |
+| **Threshold Alert** | Sawtooth | $220\text{Hz} \to 180\text{Hz}$ | $140\text{ms}$ | Sub-75% debarment warning |
+| **Target Reached** | Arpeggio | $523.25\text{Hz} \to 659.25\text{Hz} \to 783.99\text{Hz}$ | $200\text{ms}$ | 75% criteria attainment |
+
+---
+
+## 🔒 Local-First & Zero-Telemetry Architecture
+
+BunkWise adheres to a strict **privacy-first, local-first paradigm**:
+
+- **No Remote Servers**: Zero backend APIs, zero databases, zero cloud dependencies.
+- **Zero Telemetry**: No Google Analytics, no trackers, no session recordings, no external beacon requests.
+- **Atomic Local Persistence**: Real-time state synchronization via a single transactional `localStorage` key (`bunkwise_attendance_v3`).
+- **Portable JSON Backups**: Full schema export and import functionality to backup or migrate attendance profiles across devices with zero data lock-in.
+
+---
+
+## 🧪 Automated Verification Suite (122 Tests)
+
+The core mathematical engine is verified by **122 automated unit tests** across two comprehensive test harnesses:
+
+```
+===========================================================
+RUNNING BUNKWISE MIXED RECOVERY GENERATOR TEST SUITE (18)
+===========================================================
+Scenario 1:  Already Above 75%                      ✓ PASS (3/3)
+Scenario 2:  Exactly 75% Boundary                   ✓ PASS (3/3)
+Scenario 3:  Theory-Only Recovery                   ✓ PASS (5/5)
+Scenario 4:  Lab-Only Recovery Option               ✓ PASS (3/3)
+Scenario 5:  Mixed Recovery Combinations            ✓ PASS (3/3)
+Scenario 6:  Multiple Valid Combinations            ✓ PASS (2/2)
+Scenario 7:  Single Valid Combination               ✓ PASS (2/2)
+Scenario 8:  Unrecoverable State Detection          ✓ PASS (3/3)
+Scenario 9:  Theory Session Constraints             ✓ PASS (1/1)
+Scenario 10: Lab Session Constraints                ✓ PASS (1/1)
+Scenario 11: Dual Session Constraints               ✓ PASS (1/1)
+Scenario 12: Exact 75.0% Integer Boundary           ✓ PASS (3/3)
+Scenario 13: Just-Above 75.0% Sensitivity           ✓ PASS (2/2)
+Scenario 14: Sub-75% Integrity Guard                ✓ PASS (1/1)
+Scenario 15: Large Shortage Stress Test             ✓ PASS (1/1)
+Scenario 16: Decimal Learning Hours Handling        ✓ PASS (2/2)
+Scenario 17: Post-Recovery Buffer Verification      ✓ PASS (37/37)
+Scenario 18: Pareto Order & Fewest Sessions         ✓ PASS (14/14)
+TOTAL: 87 | PASSED: 87 | FAILED: 0
+
+=====================================================
+RUNNING BUNKWISE ATTENDANCE ENGINE VERIFICATION TESTS
+=====================================================
+Test 1:  55m / 115m Ratio Constants (2.09x)         ✓ PASS (3/3)
+Test 2:  Zero Conducted Classes Initialization      ✓ PASS (4/4)
+Test 3:  SAFE State Minute Buffers                  ✓ PASS (5/5)
+Test 4:  Borderline CAUTION Thresholds              ✓ PASS (4/4)
+Test 5:  Weighted Theory + Lab Calculation          ✓ PASS (3/3)
+Test 6:  Shortage Recovery Planning (AT RISK)       ✓ PASS (5/5)
+Test 7:  CRITICAL Unrecoverable Alert               ✓ PASS (3/3)
+Test 8:  Two-Decimal Floating Precision             ✓ PASS (2/2)
+Test 9:  Projection Simulator Matrix                ✓ PASS (3/3)
+Test 10: Multi-Session Combined Scenarios           ✓ PASS (3/3)
+TOTAL: 35 | PASSED: 35 | FAILED: 0
+
+==================================================================
+COMBINED ENGINE VERIFICATION: 122 / 122 TESTS PASSING (100%) 🎯
+==================================================================
+```
+
+Run the automated test harnesses locally:
+
 ```bash
-node server.js
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+# Run mixed theory + lab recovery suite
+node test_mixed_recovery.js
 
-### Option 2: Using Python
+# Run core contact-minute engine suite
+node test_attendance_engine.js
+```
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **UI Framework** | **React 19** (`19.0.0`) | Modern concurrent reactive rendering & component state |
+| **Build Engine** | **Vite 6** (`6.2.0`) | Lightning-fast HMR and optimized tree-shaken bundling |
+| **Styling** | **Tailwind CSS 3.4** | Design tokens, glassmorphic filters, and fluid responsiveness |
+| **Animations** | **GSAP 3.12** | Smooth layout tweens and timeline-controlled UI transitions |
+| **Graphics** | **HTML5 Canvas** | Custom 60fps kinetic particle field simulation |
+| **Audio** | **Web Audio API** | Procedural frequency synthesis and tactile sonic feedback |
+| **Icons** | **Lucide React** | Consistent, lightweight vector iconography |
+| **Celebrations**| **Canvas Confetti** | Milestone achievement feedback upon reaching 75% target |
+
+---
+
+## 🚀 Quickstart
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) ($\ge \text{v18.0.0}$)
+- `npm` or `pnpm` or `yarn`
+
+### Installation & Setup
+
 ```bash
-python -m http.server 3000
+# 1. Clone repository
+git clone https://github.com/aashraygalav/BUNKWISE-A-College-Attendance-Manager.git
+
+# 2. Enter project directory
+cd BUNKWISE-A-College-Attendance-Manager
+
+# 3. Install dependencies
+npm install
+
+# 4. Start local development server
+npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Option 3: Direct File Opening
-Simply double-click or open `index.html` directly in any modern web browser (Chrome, Firefox, Safari, Edge, Brave).
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
----
+### Production Build
 
-## 🌐 Free Public Deployment
+```bash
+# Build optimized production assets
+npm run build
 
-Because BunkWise is a pure static web application, it can be deployed on any free static hosting platform:
-
-### Deploying to Cloudflare Pages (Recommended)
-1. Push your repository to GitHub: `https://github.com/aashraygalav/BUNKWISE-A-College-Attendance-Manager`
-2. Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com/) and navigate to **Workers & Pages** > **Create application** > **Pages** > **Connect to Git**.
-3. Select this repository.
-4. Set build settings:
-   - **Framework preset**: None
-   - **Build command**: *(leave blank)*
-   - **Build output directory**: `/` *(root)*
-5. Click **Save and Deploy**. Cloudflare will provide a free `*.pages.dev` URL with global CDN caching and automatic HTTPS.
-
-### Deploying to GitHub Pages
-1. Go to your repository on GitHub.
-2. Navigate to **Settings** > **Pages**.
-3. Under **Build and deployment** > **Source**, choose **Deploy from a branch**.
-4. Select `main` branch and `/ (root)` folder, then click **Save**.
-5. Your site will be live at `https://aashraygalav.github.io/BUNKWISE-A-College-Attendance-Manager/`.
+# Preview production build locally
+npm run preview
+```
 
 ---
 
-## 🗺️ Roadmap
+## 📂 Project Structure
 
-- [ ] Multi-semester archive and grade-credit calculator.
-- [ ] Timetable schedule planner with automatic daily reminders.
-- [ ] Offline Progressive Web App (PWA) manifest and service worker.
-- [ ] Printable PDF attendance and bunk schedule report.
+```
+BUNKWISE-A-College-Attendance-Manager/
+├── src/
+│   ├── components/
+│   │   ├── dashboard/
+│   │   │   ├── AddEditModal.jsx           # Subject creation & configuration
+│   │   │   ├── AmbientDotField.jsx        # Canvas particle physics engine
+│   │   │   ├── AttendanceDashboard.jsx    # Cockpit HUD & stats aggregator
+│   │   │   ├── RecoveryPlannerModal.jsx   # Dedicated mixed recovery inspector
+│   │   │   ├── ScenarioSimulatorModal.jsx # What-If projection sandbox
+│   │   │   ├── SettingsModal.jsx          # JSON data backup, import & export
+│   │   │   ├── SubjectCard.jsx            # 3D Flip Card with live recovery matrix
+│   │   │   └── TodaysLogModal.jsx         # Batch daily logging interface
+│   │   ├── Features.jsx                   # Feature highlight presentation
+│   │   ├── Footer.jsx                     # Engineering credits & links
+│   │   ├── Hero.jsx                       # High-impact typographic hero
+│   │   ├── Navbar.jsx                     # Glassmorphic header & sound toggle
+│   │   ├── Philosophy.jsx                 # The 2.09x ratio rationale
+│   │   └── Protocol.jsx                   # Student operational workflow
+│   ├── engine/
+│   │   ├── AttendanceCalc.js              # Diophantine recovery solver & minute engine
+│   │   ├── AttendanceStore.js             # LocalStorage state management
+│   │   └── SoundFX.js                     # Procedural Web Audio synthesizer
+│   ├── App.jsx                            # Root application composition
+│   ├── index.css                          # Custom typography & glassmorphism tokens
+│   └── main.jsx                           # Application entry point
+├── test_attendance_engine.js              # 35 engine verification tests
+├── test_mixed_recovery.js                 # 87 mixed recovery solver tests
+├── tailwind.config.js                     # Tailwind configuration
+├── vite.config.js                         # Vite build configuration
+├── package.json                           # Metadata & dependencies
+└── README.md                              # Master technical documentation
+```
+
+---
+
+## 📜 The Student's Manifesto
+
+> *"Attendance is not a moral virtue; it is a constrained resource optimization problem.*  
+> *Do not guess. Do not hope. Calculate."*
+
+---
+
+## 👨‍💻 Author
+
+**Aashray Galav**  
+*Computer Science & Engineering*  
+[GitHub Profile](https://github.com/aashraygalav) • [Project Repository](https://github.com/aashraygalav/BUNKWISE-A-College-Attendance-Manager)
 
 ---
 
 ## 📄 License
 
-MIT License — free for students, developers, and educators.
+Distributed under the **MIT License**. See `LICENSE` for more information.
